@@ -14,7 +14,7 @@
 ## 📖 Table of Contents
 
 - [Overview](#-overview)
-- [DevSecOps & CI/CD Pipeline](#-devsecops--cicd-pipeline)
+- [DevSecOps & Security Pipeline](#-devsecops--security-pipeline)
 - [How It Works (Architecture)](#-how-it-works-architecture)
 - [Features](#-features)
 - [Duplicate Detection & Data Pruning](#-duplicate-detection--data-pruning)
@@ -44,10 +44,11 @@ Travelers constantly save social media posts, screenshots, Reels, and TikToks of
 
 ---
 
-## 🛡️ DevSecOps & CI/CD Pipeline
+## 🛡️ DevSecOps & Security Pipeline
 
-This project enforces an enterprise-grade **DevSecOps Pipeline** ensuring continuous integration, secret scanning, dependency vulnerability audits, container hardening, SBOM generation, and automated zero-downtime deployment:
+This project enforces an enterprise-grade **DevSecOps Pipeline** ensuring continuous integration, API Key protection, secret scanning, dependency vulnerability audits, container hardening, SBOM generation, and automated zero-downtime deployment:
 
+- 🗝️ **API Key Authentication**: Mandatory `X-API-Key` header security middleware protecting all extraction, job polling, and cache management endpoints.
 - 🔒 **Secret Detection**: Gitleaks secret scanning on every commit.
 - 🐍 **Python SAST**: Bandit static application security testing.
 - 📦 **Supply Chain Audit**: `pip-audit` scanning for known CVE vulnerabilities.
@@ -66,6 +67,11 @@ Detailed DevSecOps documentation available in [docs/devsecops.md](file:///C:/Use
                           ┌────────────────────────────────────────────────────────┐
                           │ Ingested Input (Image, Text, Video, Social Post, URL) │
                           └───────────────────────────┬────────────────────────────┘
+                                                      │
+                                           ┌──────────▼──────────┐
+                                           │ X-API-Key Security  │
+                                           │ Check (Header Guard)│
+                                           └──────────┬──────────┘
                                                       │
                                            ┌──────────▼──────────┐
                                            │ SHA256 Checksum     │
@@ -108,6 +114,7 @@ Detailed DevSecOps documentation available in [docs/devsecops.md](file:///C:/Use
 ## 🔥 Features
 
 - **Universal Multi-Source Engine**: Standardizes raw text, image URLs, video URLs, and social posts into `TravelContent`.
+- **API Key Security Guard**: Enforces mandatory `X-API-Key` authentication header across all API routes.
 - **High-Confidence Duplicate Detection**: Bypasses AI vision/places API calls for duplicate requests when confidence >= 70%, serving responses in **3ms**.
 - **Automatic Temp Data & Disk Pruning**: Automatically unlinks and purges temporary video frames (`frame_*.jpg`) and audio files (`audio.wav`) from disk immediately after processing.
 - **Async Task Queueing Engine**: Instantly returns `202 Accepted` with a `job_id` for heavy video uploads or batch extractions.
@@ -169,14 +176,15 @@ Create a `.env` file from the template:
 cp .env.example .env
 ```
 
-Set your API keys in `.env`:
+Set your API keys and Security Key in `.env`:
 ```env
+API_KEY="travel_sec_key_892374918237"
 GEMINI_API_KEY="your_gemini_api_key_here"
 GOOGLE_PLACES_API_KEY="your_google_places_api_key_here"
 DATABASE_URL="postgresql+asyncpg://postgres:postgres@db:5432/travel_ai_extractor"
 REDIS_URL="redis://redis:6379/0"
 ```
-*(Note: If API keys start with `mock-` or `your-`, the system automatically runs in mock fallback mode for offline testing.)*
+*(Note: If Gemini or Google Places API keys start with `mock-` or `your-`, the system automatically runs in mock fallback mode for offline testing.)*
 
 ### 2. Start the Production Stack via Docker Compose
 
@@ -184,12 +192,14 @@ REDIS_URL="redis://redis:6379/0"
 docker compose -f docker/docker-compose.yml up --build -d
 ```
 
-- **API Swagger Documentation**: [http://localhost:8000/docs](http://localhost:8000/docs)
-- **Health Check Endpoint**: [http://localhost:8000/health](http://localhost:8000/health)
+- **API Swagger Documentation**: [http://localhost:8000/docs](http://localhost:8000/docs) (Click **Authorize** and enter `travel_sec_key_892374918237`)
+- **Health Check Endpoint**: [http://localhost:8000/health](http://localhost:8000/health) (Publicly accessible without API Key)
 
 ---
 
 ## 📑 API Reference & Usage
+
+*(Note: All extraction and cache endpoints require the `X-API-Key` header.)*
 
 ### 1. Universal Multi-Source Extraction (`POST /extract/universal`)
 
@@ -198,6 +208,7 @@ Extracts travel locations from text, image URLs, or video URLs.
 **Request**:
 ```bash
 curl -X POST "http://localhost:8000/extract/universal" \
+  -H "X-API-Key: travel_sec_key_892374918237" \
   -H "Content-Type: application/json" \
   -d '{
     "source_type": "text",
@@ -236,6 +247,7 @@ Submits heavy extractions to background workers and returns an instant `202 Acce
 **Enqueue Request**:
 ```bash
 curl -X POST "http://localhost:8000/extract/async" \
+  -H "X-API-Key: travel_sec_key_892374918237" \
   -H "Content-Type: application/json" \
   -d '{
     "source_type": "video_url",
@@ -255,7 +267,8 @@ curl -X POST "http://localhost:8000/extract/async" \
 
 **Poll Job Status (`GET /jobs/{job_id}`)**:
 ```bash
-curl -X GET "http://localhost:8000/jobs/job_9823f4a12b3c"
+curl -X GET "http://localhost:8000/jobs/job_9823f4a12b3c" \
+  -H "X-API-Key: travel_sec_key_892374918237"
 ```
 
 ---
@@ -266,6 +279,7 @@ Uploads an image binary file directly.
 
 ```bash
 curl -X POST "http://localhost:8000/extract/image" \
+  -H "X-API-Key: travel_sec_key_892374918237" \
   -F "file=@/path/to/screenshot.jpg"
 ```
 
@@ -275,6 +289,7 @@ curl -X POST "http://localhost:8000/extract/image" \
 
 ```bash
 curl -X POST "http://localhost:8000/extract/text" \
+  -H "X-API-Key: travel_sec_key_892374918237" \
   -H "Content-Type: application/json" \
   -d '{"text": "Exploring Shibuya crossing in Tokyo Japan.", "context": "Tokyo Trip"}'
 ```
@@ -285,6 +300,7 @@ curl -X POST "http://localhost:8000/extract/text" \
 
 ```bash
 curl -X POST "http://localhost:8000/extract/video" \
+  -H "X-API-Key: travel_sec_key_892374918237" \
   -F "file=@/path/to/reel.mp4"
 ```
 
@@ -292,9 +308,12 @@ curl -X POST "http://localhost:8000/extract/video" \
 
 ### 6. Cache Management & Log Pruning (`GET` & `DELETE` `/cache`)
 
-- **View Cache Statistics**: `GET http://localhost:8000/cache`
-- **Clear All Cache Entries**: `DELETE http://localhost:8000/cache`
-- **Purge Historical DB Logs Older Than N Days**: `DELETE http://localhost:8000/cache/prune?days=30`
+- **View Cache Statistics**:
+  `curl -H "X-API-Key: travel_sec_key_892374918237" http://localhost:8000/cache`
+- **Clear All Cache Entries**:
+  `curl -X DELETE -H "X-API-Key: travel_sec_key_892374918237" http://localhost:8000/cache`
+- **Purge Historical DB Logs Older Than N Days**:
+  `curl -X DELETE -H "X-API-Key: travel_sec_key_892374918237" "http://localhost:8000/cache/prune?days=30"`
 
 ---
 
@@ -305,6 +324,8 @@ Integrate **Travel AI Extractor** seamlessly into your mobile app or frontend ap
 ### TypeScript / React / React Native
 
 ```typescript
+const API_KEY = "travel_sec_key_892374918237";
+
 interface ExtractedPlace {
   name: string;
   city: string;
@@ -326,7 +347,10 @@ interface ExtractionResponse {
 export async function extractTravelPlaces(content: string, context?: string): Promise<ExtractionResponse> {
   const response = await fetch("http://localhost:8000/extract/universal", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      "X-API-Key": API_KEY
+    },
     body: JSON.stringify({
       source_type: "text",
       content: content,
@@ -355,8 +379,11 @@ extractTravelPlaces("Visited Shibuya crossing and Tokyo Tower", "Japan Trip")
 import httpx
 import asyncio
 
+API_KEY = "travel_sec_key_892374918237"
+
 async def extract_places(text_content: str, context: str = None):
     url = "http://localhost:8000/extract/universal"
+    headers = {"X-API-Key": API_KEY}
     payload = {
         "source_type": "text",
         "content": text_content,
@@ -364,7 +391,7 @@ async def extract_places(text_content: str, context: str = None):
     }
     
     async with httpx.AsyncClient() as client:
-        response = await client.post(url, json=payload, timeout=15.0)
+        response = await client.post(url, json=payload, headers=headers, timeout=15.0)
         response.raise_for_status()
         return response.json()
 
@@ -381,6 +408,8 @@ for place in data['places']:
 
 ```swift
 import Foundation
+
+let apiKey = "travel_sec_key_892374918237"
 
 struct ExtractionRequest: Encodable {
     let source_type: String
@@ -408,6 +437,7 @@ func extractTravelPlaces(text: String, completion: @escaping (Result<ExtractionR
     var request = URLRequest(url: url)
     request.httpMethod = "POST"
     request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+    request.setValue(apiKey, forHTTPHeaderField: "X-API-Key")
     
     let body = ExtractionRequest(source_type: "text", content: text, context: "iOS Upload")
     request.httpBody = try? JSONEncoder().encode(body)
@@ -433,6 +463,7 @@ func extractTravelPlaces(text: String, completion: @escaping (Result<ExtractionR
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.Body
+import retrofit2.http.Header
 import retrofit2.http.POST
 
 data class UniversalRequest(
@@ -458,7 +489,10 @@ data class UniversalResponse(
 
 interface TravelApiService {
     @POST("extract/universal")
-    suspend fun extractPlaces(@Body request: UniversalRequest): UniversalResponse
+    suspend fun extractPlaces(
+        @Header("X-API-Key") apiKey: String = "travel_sec_key_892374918237",
+        @Body request: UniversalRequest
+    ): UniversalResponse
 }
 
 object RetrofitClient {
@@ -476,13 +510,11 @@ object RetrofitClient {
 
 ## 🧪 Testing & Quality Assurance
 
-Run the complete 31-test suite inside the production Docker container:
+Run the complete test suite inside the production Docker container:
 
 ```bash
-docker run --rm -v "${PWD}:/app" travel-ai-extractor:latest pytest -v
+docker run --rm -v "${PWD}:/app" travel-ai-extractor:latest pytest tests/ -v
 ```
-
-**Pass Rate**: 100% (31 passed in 3.68s, 0 warnings).
 
 ---
 

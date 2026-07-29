@@ -1,6 +1,6 @@
 # Enterprise DevSecOps & CI/CD Pipeline Documentation
 
-> Complete technical documentation for the enterprise-grade **DevSecOps**, **Security Pipeline**, and **Continuous Deployment** architecture powering **Travel AI Extractor**.
+> Complete technical documentation for the enterprise-grade **DevSecOps**, **Security Pipeline**, **API Key Security**, and **Continuous Deployment** architecture powering **Travel AI Extractor**.
 
 ---
 
@@ -8,19 +8,20 @@
 
 - [1. Architecture Overview](#1-architecture-overview)
 - [2. Quality Gates & Security Controls](#2-quality-gates--security-controls)
-- [3. Security Scanning Tools](#3-security-scanning-tools)
-- [4. Container Security & Image Hardening](#4-container-security--image-hardening)
-- [5. Software Bill of Materials (SBOM)](#5-software-bill-of-materials-sbom)
-- [6. Container Image Signing (Cosign)](#6-container-image-signing-cosign)
-- [7. Linux VPS Deployment Flow & Secrets](#7-linux-vps-deployment-flow--secrets)
-- [8. Post-Deployment Health Check & Rollback](#8-post-deployment-health-check--rollback)
-- [9. Dependency Management & Security Policy](#9-dependency-management--security-policy)
+- [3. API Key Security & Authentication Guard](#3-api-key-security--authentication-guard)
+- [4. Security Scanning Tools](#4-security-scanning-tools)
+- [5. Container Security & Image Hardening](#5-container-security--image-hardening)
+- [6. Software Bill of Materials (SBOM)](#6-software-bill-of-materials-sbom)
+- [7. Container Image Signing (Cosign)](#7-container-image-signing-cosign)
+- [8. Linux VPS Deployment Flow & Secrets](#8-linux-vps-deployment-flow--secrets)
+- [9. Post-Deployment Health Check & Rollback](#9-post-deployment-health-check--rollback)
+- [10. Dependency Management & Security Policy](#10-dependency-management--security-policy)
 
 ---
 
 ## 1. Architecture Overview
 
-The DevSecOps pipeline enforces automated linting, security scanning, container hardening, SBOM generation, and zero-downtime deployment to a Linux VPS upon passing all quality gates.
+The DevSecOps pipeline enforces automated linting, API Key security authentication, container hardening, SBOM generation, and zero-downtime deployment to a Linux VPS upon passing all quality gates.
 
 ```
                                   Git Push / Pull Request
@@ -74,7 +75,7 @@ The DevSecOps pipeline enforces automated linting, security scanning, container 
 
 Deployment to production is **strictly prohibited** if any of the following quality gate conditions occur:
 
-1. ❌ Any Pytest unit or integration test fails.
+1. ❌ Any Pytest unit, integration, or security test fails.
 2. ❌ Gitleaks detects any committed secret, token, password, or API key.
 3. ❌ Bandit SAST scanner detects any **High** severity security flaw.
 4. ❌ `pip-audit` detects any **Critical** dependency vulnerability.
@@ -84,7 +85,24 @@ Deployment to production is **strictly prohibited** if any of the following qual
 
 ---
 
-## 3. Security Scanning Tools
+## 3. API Key Security & Authentication Guard
+
+The application enforces mandatory **API Key Authentication** across all extraction, job queueing, and cache management endpoints:
+
+- **Header Specification**: `X-API-Key: <your_api_key>`
+- **Configuration (`.env`)**: `API_KEY="travel_sec_key_..."`
+- **Security Dependency (`app/core/security.py`)**: `verify_api_key` guard verifies incoming request headers against the configured environment secret.
+- **HTTP 401 Response**: Unauthenticated or invalid requests return `HTTP 401 Unauthorized`:
+  ```json
+  {
+    "detail": "Invalid or missing API key. Provide a valid 'X-API-Key' header."
+  }
+  ```
+- **Public Endpoints**: `/health` and `/` endpoints remain unauthenticated to support container health probes and load balancer health checks.
+
+---
+
+## 4. Security Scanning Tools
 
 | Tool | Category | Target | Failure Condition |
 |---|---|---|---|
@@ -98,7 +116,7 @@ Deployment to production is **strictly prohibited** if any of the following qual
 
 ---
 
-## 4. Container Security & Image Hardening
+## 5. Container Security & Image Hardening
 
 The production Docker image (`docker/Dockerfile`) enforces security best practices:
 
@@ -114,7 +132,7 @@ The production Docker image (`docker/Dockerfile`) enforces security best practic
 
 ---
 
-## 5. Software Bill of Materials (SBOM)
+## 6. Software Bill of Materials (SBOM)
 
 The pipeline automatically generates Software Bill of Materials (SBOM) artifacts on every release/security run using **Syft**:
 - **SPDX Format**: `sbom-spdx.json`
@@ -124,7 +142,7 @@ Artifacts are archived in GitHub Actions build runs and retention-managed for 30
 
 ---
 
-## 6. Container Image Signing (Cosign)
+## 7. Container Image Signing (Cosign)
 
 Container image provenance and signing is prepared using **Sigstore Cosign**:
 
@@ -143,7 +161,7 @@ cosign verify ghcr.io/altafpasha/travel-ai-extractor:latest \
 
 ---
 
-## 7. Linux VPS Deployment Flow & Secrets
+## 8. Linux VPS Deployment Flow & Secrets
 
 ### Configured GitHub Secrets:
 To enable automated deployments, configure the following secrets in **GitHub Repository Settings -> Secrets and variables -> Actions**:
@@ -154,10 +172,11 @@ To enable automated deployments, configure the following secrets in **GitHub Rep
 - `VPS_PORT`: SSH Port (Default: `22`).
 - `GEMINI_API_KEY`: Production Gemini 2.5 Flash API Key.
 - `GOOGLE_PLACES_API_KEY`: Production Google Places API Key.
+- `API_KEY`: Production API Key (`X-API-Key` header secret).
 
 ---
 
-## 8. Post-Deployment Health Check & Rollback
+## 9. Post-Deployment Health Check & Rollback
 
 ### Automated Health Verification:
 Immediately after executing `docker compose up -d` on the Linux VPS, the CD workflow polls `http://localhost:8000/health`:
@@ -174,7 +193,7 @@ If `HEALTH_STATUS` returns any code other than `200 OK`:
 
 ---
 
-## 9. Dependency Management & Security Policy
+## 10. Dependency Management & Security Policy
 
 - **Dependabot (`.github/dependabot.yml`)**: Automated weekly dependency PRs for `pip` and `github-actions`.
 - **Security Policy (`SECURITY.md`)**: Public security vulnerability reporting policy and disclosure timeline.

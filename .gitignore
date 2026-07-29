@@ -1,0 +1,31 @@
+# Environment variables & secrets
+.env
+*.env
+!.env.example
+
+# Python Caches & Bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.coverage
+htmlcov/
+*.log
+
+# Databases & Local Storage
+*.db
+*.sqlite
+*.sqlite3
+travel_extractor.db
+
+# Uploads & Temporary Media
+uploads/*
+!uploads/.gitkeep
+temp/
+tmp/
+
+# IDE & OS Files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

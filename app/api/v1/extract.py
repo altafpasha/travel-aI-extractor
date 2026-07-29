@@ -1,13 +1,14 @@
 from fastapi import APIRouter, UploadFile, File, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.database.connection import get_db
+from app.core.security import verify_api_key
 from app.utils.file_handler import FileHandler
 from app.services.extraction_service import ExtractionService
 from app.services.multisource_service import MultiSourceEngine
 from app.schemas.extraction import ImageExtractionResponse, TextExtractionRequest, ExtractionErrorResponse
 from app.schemas.multisource import UniversalExtractionRequest
 
-router = APIRouter(prefix="/extract", tags=["Extraction"])
+router = APIRouter(prefix="/extract", tags=["Extraction"], dependencies=[Depends(verify_api_key)])
 
 
 @router.post(
@@ -17,6 +18,7 @@ router = APIRouter(prefix="/extract", tags=["Extraction"])
     summary="Extract places from an uploaded image or screenshot",
     responses={
         400: {"model": ExtractionErrorResponse, "description": "Invalid image file or format"},
+        401: {"description": "Unauthorized - Missing or invalid X-API-Key header"},
         502: {"model": ExtractionErrorResponse, "description": "Upstream AI/Places API failure"}
     }
 )
@@ -48,6 +50,7 @@ async def extract_image(
     summary="Extract places from social media text, captions, or travel posts",
     responses={
         400: {"model": ExtractionErrorResponse, "description": "Invalid request payload"},
+        401: {"description": "Unauthorized - Missing or invalid X-API-Key header"},
         502: {"model": ExtractionErrorResponse, "description": "Upstream AI/Places API failure"}
     }
 )
@@ -74,6 +77,7 @@ async def extract_text(
     summary="Extract places from uploaded video files (MP4, MOV, WebM)",
     responses={
         400: {"model": ExtractionErrorResponse, "description": "Invalid video file or format"},
+        401: {"description": "Unauthorized - Missing or invalid X-API-Key header"},
         502: {"model": ExtractionErrorResponse, "description": "Upstream AI/Places API failure"}
     }
 )
@@ -103,6 +107,7 @@ async def extract_video(
     summary="Universal multi-source travel place extraction API",
     responses={
         400: {"model": ExtractionErrorResponse, "description": "Invalid source content"},
+        401: {"description": "Unauthorized - Missing or invalid X-API-Key header"},
         502: {"model": ExtractionErrorResponse, "description": "Upstream API failure"}
     }
 )

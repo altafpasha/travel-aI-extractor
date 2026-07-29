@@ -1,62 +1,53 @@
-from fastapi import APIRouter, Depends, status, Query
+from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.database.connection import get_db
-from app.database.repository import ExtractionRepository
+from app.core.security import verify_api_key
 from app.services.cache_service import CacheService
-from pydantic import BaseModel, Field
 
-router = APIRouter(prefix="/cache", tags=["Cache"])
-
-
-class CacheStatsResponse(BaseModel):
-    """Response schema for cache performance metrics."""
-    total_entries: int = Field(..., description="Total unique items cached")
-    total_hits: int = Field(..., description="Total cache hits served")
-
-
-class CacheClearResponse(BaseModel):
-    """Response schema for cache purge operation."""
-    status: str = Field(default="ok")
-    deleted_count: int = Field(..., description="Number of deleted cache records")
+router = APIRouter(prefix="/cache", tags=["Cache Management"], dependencies=[Depends(verify_api_key)])
 
 
 @router.get(
     "",
-    response_model=CacheStatsResponse,
     status_code=status.HTTP_200_OK,
-    summary="Get smart cache statistics"
+    summary="Retrieve overall smart extraction cache performance statistics"
 )
-async def get_cache_stats(db: AsyncSession = Depends(get_db)) -> CacheStatsResponse:
-    """Returns smart cache utilization metrics and hit counts."""
-    service = CacheService(db)
-    stats = await service.repository.get_stats()
-    return CacheStatsResponse(**stats)
+async def get_cache_statistics(
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Returns total cached extraction entries, cumulative cache hit counts, and performance metrics.
+    """
+    cache_service = CacheService(db_session=db)
+    return await cache_service.get_stats()
 
 
 @router.delete(
     "",
-    response_model=CacheClearResponse,
     status_code=status.HTTP_200_OK,
-    summary="Clear all smart cache entries"
+    summary="Purge all smart cache entries from database"
 )
-async def clear_cache(db: AsyncSession = Depends(get_db)) -> CacheClearResponse:
-    """Purges all cached extractions from database."""
-    service = CacheService(db)
-    deleted_count = await service.clear_all_cache()
-    return CacheClearResponse(status="ok", deleted_count=deleted_count)
+async def clear_cache_entries(
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Clears all stored smart cache entries.
+    """
+    cache_service = CacheService(db_session=db)
+    return await cache_service.clear_cache()
 
 
 @router.delete(
     "/prune",
-    response_model=CacheClearResponse,
     status_code=status.HTTP_200_OK,
     summary="Purge historical extraction logs older than N days"
 )
-async def prune_old_logs(
-    days: int = Query(30, ge=1, le=365, description="Number of days to keep"),
+async def prune_historical_logs(
+    days: int = Query(30, ge=1, le=365, description="Retention threshold in days"),
     db: AsyncSession = Depends(get_db)
-) -> CacheClearResponse:
-    """Prunes old historical database extraction logs to keep storage size lightweight."""
-    repo = ExtractionRepository(db)
-    deleted_count = await repo.purge_old_records(days_to_keep=days)
-    return CacheClearResponse(status="ok", deleted_count=deleted_count)
+):
+    """
+    Deletes historical extraction logs older than the specified retention window (default 30 days).
+    """
+    cache_service = CacheService(db_session=db)
+    return await cache_service.prune_old_logs(days_to_keep=days)

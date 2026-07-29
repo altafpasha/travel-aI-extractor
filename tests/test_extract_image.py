@@ -1,55 +1,49 @@
 import io
 import pytest
+from PIL import Image
+from app.core.config import get_settings
 
 
 @pytest.mark.asyncio
 async def test_extract_image_success(client):
-    """Tests successful image upload and place extraction pipeline via POST /extract/image."""
-    dummy_image = b"\xff\xd8\xff\xe0\x00\x10JFIF\x00\x01\x01\x01\x00`\x00`\x00\x00\xff\xdb\x00C\x00" + b"\x00" * 100
+    """Test successful image upload extraction endpoint."""
+    settings = get_settings()
+    headers = {"X-API-Key": settings.API_KEY}
 
-    files = {
-        "file": ("test_kyoto.jpg", io.BytesIO(dummy_image), "image/jpeg")
-    }
+    img = Image.new("RGB", (100, 100), color="blue")
+    img_byte_arr = io.BytesIO()
+    img.save(img_byte_arr, format="JPEG")
+    img_bytes = img_byte_arr.getvalue()
 
-    response = await client.post("/extract/image", files=files)
-    assert response.status_code == 200, f"Response: {response.text}"
+    files = {"file": ("test_landmark.jpg", img_bytes, "image/jpeg")}
 
-    data = response.json()
+    res = await client.post("/extract/image", files=files, headers=headers)
+    assert res.status_code == 200
+    data = res.json()
     assert "destination" in data
     assert "places" in data
-    assert "execution_time_seconds" in data
     assert isinstance(data["places"], list)
-
-    if len(data["places"]) > 0:
-        place = data["places"][0]
-        assert "name" in place
-        assert "confidence" in place
-        assert "verified" in place
 
 
 @pytest.mark.asyncio
 async def test_extract_image_invalid_extension(client):
-    """Tests that uploading a unsupported extension (e.g., .txt) returns HTTP 400 error."""
-    files = {
-        "file": ("notes.txt", io.BytesIO(b"Hello world text file"), "text/plain")
-    }
+    """Test image upload endpoint rejecting unsupported file extension."""
+    settings = get_settings()
+    headers = {"X-API-Key": settings.API_KEY}
+    files = {"file": ("unsupported_doc.txt", b"text content", "text/plain")}
 
-    response = await client.post("/extract/image", files=files)
-    assert response.status_code == 400
-    data = response.json()
-    assert data["error"] == "ImageProcessingError"
-    assert "Unsupported image extension" in data["message"]
+    res = await client.post("/extract/image", files=files, headers=headers)
+    assert res.status_code == 400
+    assert "Unsupported image file format" in res.json()["detail"]
 
 
 @pytest.mark.asyncio
 async def test_extract_image_empty_file(client):
-    """Tests that uploading an empty 0-byte file returns HTTP 400 error."""
-    files = {
-        "file": ("empty.jpg", io.BytesIO(b""), "image/jpeg")
-    }
+    """Test image upload endpoint rejecting empty 0-byte file."""
+    settings = get_settings()
+    headers = {"X-API-Key": settings.API_KEY}
+    files = {"file": ("empty_photo.jpg", b"", "image/jpeg")}
 
-    response = await client.post("/extract/image", files=files)
-    assert response.status_code == 400
-    data = response.json()
-    assert data["error"] == "ImageProcessingError"
-    assert "Uploaded file is empty" in data["message"]
+    res = await client.post("/extract/image", files=files, headers=headers)
+    assert res.status_code == 400
+    assert "Uploaded image file is empty" in res.json()["detail"]

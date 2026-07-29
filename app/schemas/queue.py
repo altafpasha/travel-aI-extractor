@@ -10,6 +10,9 @@ class AsyncExtractionResponse(BaseModel):
     check_status_url: str = Field(..., json_schema_extra={"example": "/jobs/job_9823f4a12"}, description="URL to check job progress and retrieve results")
 
 
+JobEnqueueResponse = AsyncExtractionResponse
+
+
 class JobStatusResponse(BaseModel):
     """Response model for checking async job status."""
     job_id: str = Field(..., json_schema_extra={"example": "job_9823f4a12"})

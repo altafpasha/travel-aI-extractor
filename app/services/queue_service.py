@@ -40,21 +40,25 @@ class QueueService:
             check_status_url=f"/jobs/{job_id}"
         )
 
+    enqueue_job = enqueue_universal_extraction
+
     async def get_job_status(self, job_id: str) -> Optional[JobStatusResponse]:
         """Looks up job status by ID."""
         job = await self.repo.get_job(job_id)
         if not job:
             return None
 
-        result_obj: Optional[ImageExtractionResponse] = None
+        parsed_result: Optional[ImageExtractionResponse] = None
         if job.result_json:
-            result_dict = json.loads(job.result_json)
-            result_obj = ImageExtractionResponse(**result_dict)
+            try:
+                parsed_result = ImageExtractionResponse(**json.loads(job.result_json))
+            except Exception as e:
+                logger.error(f"Failed to parse stored job result JSON: {str(e)}")
 
         return JobStatusResponse(
             job_id=job.job_id,
             status=job.status,
-            result=result_obj,
+            result=parsed_result,
             error_message=job.error_message
         )
 
@@ -62,26 +66,25 @@ class QueueService:
         self,
         job_id: str,
         request: UniversalExtractionRequest
-    ):
-        """Worker task executing extraction pipeline in background."""
+    ) -> None:
+        """Internal worker executing extraction logic asynchronously in background."""
         try:
-            await self.repo.update_job_status(job_id, "processing")
+            await self.repo.update_job_status(job_id, status="processing")
             content = await MultiSourceEngine.build_travel_content(request)
+            
             extraction_service = ExtractionService(db_session=self.db_session)
-            response = await extraction_service.process_travel_content(content)
+            result = await extraction_service.process_travel_content(content)
 
             await self.repo.update_job_status(
-                job_id=job_id,
+                job_id,
                 status="completed",
-                result_dict=response.model_dump()
+                result_dict=result.model_dump()
             )
-            await self.db_session.commit()
-            logger.info(f"Background job '{job_id}' completed successfully.")
+            logger.info(f"Async extraction job '{job_id}' completed successfully.")
         except Exception as e:
-            logger.error(f"Background job '{job_id}' failed: {str(e)}")
+            logger.error(f"Async extraction job '{job_id}' failed: {str(e)}")
             await self.repo.update_job_status(
-                job_id=job_id,
+                job_id,
                 status="failed",
                 error_message=str(e)
             )
-            await self.db_session.commit()

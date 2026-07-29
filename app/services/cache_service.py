@@ -1,7 +1,7 @@
 import json
 from typing import Optional, Dict, Any
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.database.repository import CacheRepository
+from app.database.repository import CacheRepository, ExtractionRepository
 from app.core.logging import logger
 
 
@@ -9,7 +9,9 @@ class CacheService:
     """Service providing Smart Caching and Duplicate Detection for travel extractions."""
 
     def __init__(self, db_session: AsyncSession):
+        self.db_session = db_session
         self.repository = CacheRepository(db_session)
+        self.extraction_repo = ExtractionRepository(db_session)
 
     async def get_cached_extraction(
         self,
@@ -26,7 +28,6 @@ class CacheService:
             return None
 
         places = cached_data.get("places", [])
-        # If cached data contains places, check if at least one place meets min_confidence threshold
         if places:
             max_confidence = max(p.get("confidence", 0) for p in places)
             if max_confidence < min_confidence:
@@ -52,10 +53,20 @@ class CacheService:
             response_dict=response_dict
         )
 
-    async def get_cache_statistics() -> Dict[str, Any]:
+    async def get_stats(self) -> Dict[str, Any]:
         """Retrieves global cache hit/miss statistics."""
         return await self.repository.get_stats()
 
-    async def clear_all_cache(self) -> int:
+    get_cache_statistics = get_stats
+
+    async def clear_cache(self) -> Dict[str, Any]:
         """Purges all entries from smart cache."""
-        return await self.repository.clear_cache()
+        deleted_count = await self.repository.clear_cache()
+        return {"status": "ok", "deleted_count": deleted_count}
+
+    clear_all_cache = clear_cache
+
+    async def prune_old_logs(self, days_to_keep: int = 30) -> Dict[str, Any]:
+        """Purges historical log entries older than days_to_keep days."""
+        deleted_count = await self.extraction_repo.purge_old_records(days_to_keep=days_to_keep)
+        return {"status": "ok", "deleted_count": deleted_count}

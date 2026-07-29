@@ -1,51 +1,48 @@
 import pytest
+from app.core.config import get_settings
 
 
 @pytest.mark.asyncio
 async def test_extract_text_success(client):
-    """Tests successful text extraction via POST /extract/text."""
+    """Test successful text extraction endpoint."""
+    settings = get_settings()
+    headers = {"X-API-Key": settings.API_KEY}
     payload = {
-        "text": "Spent the weekend exploring cafes around Kyoto and visited Fushimi Inari Shrine."
+        "text": "Exploring Shibuya crossing in Tokyo Japan."
     }
 
-    response = await client.post("/extract/text", json=payload)
-    assert response.status_code == 200, f"Response: {response.text}"
-
-    data = response.json()
-    assert "destination" in data
-    assert "places" in data
-    assert "execution_time_seconds" in data
-    assert isinstance(data["places"], list)
-
-    if len(data["places"]) > 0:
-        place = data["places"][0]
-        assert "name" in place
-        assert "confidence" in place
-        assert "verified" in place
-
-
-@pytest.mark.asyncio
-async def test_extract_text_with_context(client):
-    """Tests text extraction with optional location context hint."""
-    payload = {
-        "text": "Exploring Shibuya crossing and cafes.",
-        "context": "Tokyo, Japan"
-    }
-
-    response = await client.post("/extract/text", json=payload)
-    assert response.status_code == 200
-    data = response.json()
+    res = await client.post("/extract/text", json=payload, headers=headers)
+    assert res.status_code == 200
+    data = res.json()
     assert data["destination"] == "Tokyo"
-    assert len(data["places"]) > 0
+    assert len(data["places"]) >= 1
     assert data["places"][0]["name"] == "Shibuya Crossing"
 
 
 @pytest.mark.asyncio
-async def test_extract_text_validation_empty(client):
-    """Tests that empty text payload returns HTTP 422 validation error."""
+async def test_extract_text_with_context(client):
+    """Test text extraction endpoint with optional context location hint."""
+    settings = get_settings()
+    headers = {"X-API-Key": settings.API_KEY}
     payload = {
-        "text": ""
+        "text": "Visiting Fushimi Inari Shrine",
+        "context": "Kyoto, Japan Trip"
     }
 
-    response = await client.post("/extract/text", json=payload)
-    assert response.status_code == 422
+    res = await client.post("/extract/text", json=payload, headers=headers)
+    assert res.status_code == 200
+    data = res.json()
+    assert data["destination"] == "Kyoto"
+
+
+@pytest.mark.asyncio
+async def test_extract_text_validation_empty(client):
+    """Test text extraction validation rejecting empty text."""
+    settings = get_settings()
+    headers = {"X-API-Key": settings.API_KEY}
+    payload = {
+        "text": "   "
+    }
+
+    res = await client.post("/extract/text", json=payload, headers=headers)
+    assert res.status_code == 422

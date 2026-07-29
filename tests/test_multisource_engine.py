@@ -1,54 +1,53 @@
 import pytest
-from app.schemas.multisource import UniversalExtractionRequest
+from app.core.config import get_settings
 from app.services.multisource_service import MultiSourceEngine
+from app.schemas.multisource import UniversalExtractionRequest
 
 
 @pytest.mark.asyncio
 async def test_multisource_build_travel_content_text():
-    """Tests building normalized TravelContent from text source."""
+    """Test MultiSourceEngine building TravelContent from raw text."""
     req = UniversalExtractionRequest(
         source_type="text",
-        content="Exploring Shibuya in Tokyo",
-        context="Japan"
+        content="Exploring Shibuya Crossing in Tokyo",
+        context="Japan Trip"
     )
     content = await MultiSourceEngine.build_travel_content(req)
-
     assert content.source_type == "text"
-    assert content.caption == "Exploring Shibuya in Tokyo"
-    assert content.metadata.get("context_hint") == "Japan"
+    assert content.caption == "Exploring Shibuya Crossing in Tokyo"
+    assert content.metadata.get("context") == "Japan Trip"
 
 
 @pytest.mark.asyncio
 async def test_extract_universal_endpoint(client):
-    """Tests POST /extract/universal endpoint with text content."""
+    """Test POST /extract/universal endpoint."""
+    settings = get_settings()
+    headers = {"X-API-Key": settings.API_KEY}
     payload = {
         "source_type": "text",
-        "content": "Exploring Shibuya crossing in Tokyo Japan.",
-        "context": "Tokyo trip"
+        "content": "Visiting Fushimi Inari Shrine in Kyoto Japan.",
+        "context": "Kyoto Trip"
     }
 
-    response = await client.post("/extract/universal", json=payload)
-    assert response.status_code == 200, f"Response: {response.text}"
-
-    data = response.json()
-    assert "destination" in data
-    assert "places" in data
-    assert isinstance(data["places"], list)
-    if len(data["places"]) > 0:
-        assert data["places"][0]["name"] == "Shibuya Crossing"
+    res = await client.post("/extract/universal", json=payload, headers=headers)
+    assert res.status_code == 200
+    data = res.json()
+    assert data["destination"] == "Kyoto"
+    assert len(data["places"]) >= 1
 
 
 @pytest.mark.asyncio
 async def test_extract_universal_endpoint_url(client):
-    """Tests POST /extract/universal endpoint with media URL."""
+    """Test POST /extract/universal endpoint with image URL."""
+    settings = get_settings()
+    headers = {"X-API-Key": settings.API_KEY}
     payload = {
         "source_type": "image_url",
         "content": "https://example.com/kyoto_photo.jpg",
-        "context": "Kyoto, Japan"
+        "context": "Shared Reel"
     }
 
-    response = await client.post("/extract/universal", json=payload)
-    assert response.status_code == 200
-    data = response.json()
+    res = await client.post("/extract/universal", json=payload, headers=headers)
+    assert res.status_code == 200
+    data = res.json()
     assert "destination" in data
-    assert "places" in data

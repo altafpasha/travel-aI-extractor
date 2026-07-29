@@ -19,7 +19,7 @@ class ExtractionLog(Base):
     places_count: Mapped[int] = mapped_column(Integer, default=0)
     raw_response: Mapped[str] = mapped_column(Text, nullable=False)
     execution_time_seconds: Mapped[float] = mapped_column(Float, nullable=False)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
 
 class CacheEntry(Base):
@@ -31,9 +31,9 @@ class CacheEntry(Base):
     destination: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     cached_response: Mapped[str] = mapped_column(Text, nullable=False)
     hit_count: Mapped[int] = mapped_column(Integer, default=0)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime,
+        DateTime(timezone=True),
         default=lambda: datetime.now(timezone.utc),
         onupdate=lambda: datetime.now(timezone.utc)
     )
@@ -47,8 +47,8 @@ class ExtractionJob(Base):
     status: Mapped[str] = mapped_column(String(30), default="queued", index=True)  # queued, processing, completed, failed
     result_json: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     error_message: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
-    completed_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    completed_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
 
 
 class ExtractionRepository:

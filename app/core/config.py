@@ -12,6 +12,9 @@ class Settings(BaseSettings):
     DEBUG: bool = True
     LOG_LEVEL: str = "INFO"
 
+    # API Security Key
+    API_KEY: str = "travel_sec_key_892374918237"
+
     # API Keys
     GEMINI_API_KEY: str = ""
     GOOGLE_PLACES_API_KEY: str = ""

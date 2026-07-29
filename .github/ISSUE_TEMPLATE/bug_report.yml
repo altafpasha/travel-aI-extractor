@@ -1,0 +1,43 @@
+name: Bug Report
+description: Create a report to help us reproduce and fix a bug
+title: "[BUG]: "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for reporting a bug in Travel AI Extractor! Please fill out the form below.
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: A clear and concise description of what the bug is.
+      placeholder: Describe the bug encountered...
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to Reproduce
+      description: Detailed steps to reproduce the behavior.
+      placeholder: |
+        1. Call POST /extract/universal with ...
+        2. Inspect response ...
+        3. See error ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: A clear description of what you expected to happen.
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Environment Info
+      description: Python version, Docker version, OS, API environment.
+      placeholder: e.g. Python 3.12, Docker 26.0, Ubuntu 22.04 VPS
+    validations:
+      required: false

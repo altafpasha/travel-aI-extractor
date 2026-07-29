@@ -1,7 +1,11 @@
 # Environment variables & secrets
 .env
-*.env
+.env.*
 !.env.example
+*.pem
+*.key
+*.crt
+*.pfx
 
 # Python Caches & Bytecode
 __pycache__/
@@ -9,6 +13,7 @@ __pycache__/
 *$py.class
 .pytest_cache/
 .coverage
+coverage.xml
 htmlcov/
 *.log
 
@@ -21,6 +26,7 @@ travel_extractor.db
 # Uploads & Temporary Media
 uploads/*
 !uploads/.gitkeep
+cache/
 temp/
 tmp/
 

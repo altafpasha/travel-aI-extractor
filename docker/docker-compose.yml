@@ -8,9 +8,19 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: travel_ai_extractor
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - travel_net
+    deploy:
+      resources:
+        limits:
+          cpus: '1.5'
+          memory: 1g
+        reservations:
+          cpus: '0.25'
+          memory: 256m
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d travel_ai_extractor"]
       interval: 5s
@@ -22,7 +32,17 @@ services:
     container_name: travel_ai_extractor_redis
     restart: unless-stopped
     ports:
-      - "6379:6379"
+      - "127.0.0.1:6379:6379"
+    networks:
+      - travel_net
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512m
+        reservations:
+          cpus: '0.1'
+          memory: 64m
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
@@ -40,20 +60,35 @@ services:
     environment:
       DATABASE_URL: "postgresql+asyncpg://postgres:postgres@db:5432/travel_ai_extractor"
       REDIS_URL: "redis://redis:6379/0"
-      GEMINI_API_KEY: "mock-gemini-key"
-      GOOGLE_PLACES_API_KEY: "mock-places-key"
+      GEMINI_API_KEY: "${GEMINI_API_KEY:-mock-gemini-key}"
+      GOOGLE_PLACES_API_KEY: "${GOOGLE_PLACES_API_KEY:-mock-places-key}"
     depends_on:
       db:
         condition: service_healthy
       redis:
         condition: service_healthy
+    networks:
+      - travel_net
     volumes:
-      - ../uploads:/app/uploads
+      - uploads_data:/app/uploads
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2g
+        reservations:
+          cpus: '0.5'
+          memory: 512m
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 10s
       timeout: 5s
       retries: 3
 
+networks:
+  travel_net:
+    driver: bridge
+
 volumes:
   postgres_data:
+  uploads_data:

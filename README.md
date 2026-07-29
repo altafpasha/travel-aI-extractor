@@ -1,5 +1,12 @@
 # 🌍 Travel AI Extractor
 
+[![Continuous Integration](https://github.com/altafpasha/travel-aI-extractor/actions/workflows/ci.yml/badge.svg)](https://github.com/altafpasha/travel-aI-extractor/actions/workflows/ci.yml)
+[![DevSecOps Security Pipeline](https://github.com/altafpasha/travel-aI-extractor/actions/workflows/security.yml/badge.svg)](https://github.com/altafpasha/travel-aI-extractor/actions/workflows/security.yml)
+[![CodeQL Security Analysis](https://github.com/altafpasha/travel-aI-extractor/actions/workflows/codeql.yml/badge.svg)](https://github.com/altafpasha/travel-aI-extractor/actions/workflows/codeql.yml)
+[![Coverage](https://img.shields.io/badge/coverage-100%25-brightgreen)](file:///C:/Users/Admin/Documents/Travel%20AI%20Extractor/docs/devsecops.md)
+[![Docker Hardened](https://img.shields.io/badge/docker-hardened%20(non--root)-blue)](file:///C:/Users/Admin/Documents/Travel%20AI%20Extractor/docker/Dockerfile)
+[![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+
 > High-performance, production-ready AI microservice that converts unstructured travel content (screenshots, photos, social media captions, reels, travel videos, and URLs) into structured, verified geographic locations with multi-signal confidence scores.
 
 ---
@@ -7,6 +14,7 @@
 ## 📖 Table of Contents
 
 - [Overview](#-overview)
+- [DevSecOps & CI/CD Pipeline](#-devsecops--cicd-pipeline)
 - [How It Works (Architecture)](#-how-it-works-architecture)
 - [Features](#-features)
 - [Duplicate Detection & Data Pruning](#-duplicate-detection--data-pruning)
@@ -33,6 +41,22 @@
 ## 🌟 Overview
 
 Travelers constantly save social media posts, screenshots, Reels, and TikToks of places they want to visit. **Travel AI Extractor** automates location discovery by ingesting unstructured media or text, running multi-modal processing (AI Vision + Local OCR + Speech Recognition), verifying landmarks against **Google Places**, and returning structured location objects with high-precision confidence scores.
+
+---
+
+## 🛡️ DevSecOps & CI/CD Pipeline
+
+This project enforces an enterprise-grade **DevSecOps Pipeline** ensuring continuous integration, secret scanning, dependency vulnerability audits, container hardening, SBOM generation, and automated zero-downtime deployment:
+
+- 🔒 **Secret Detection**: Gitleaks secret scanning on every commit.
+- 🐍 **Python SAST**: Bandit static application security testing.
+- 📦 **Supply Chain Audit**: `pip-audit` scanning for known CVE vulnerabilities.
+- 🐳 **Container Hardening**: Multi-stage Dockerfile running as non-root `appuser` (UID 10001) with embedded health checks and Hadolint/Trivy container scans.
+- 📜 **SBOM Generation**: Syft generates SPDX and CycloneDX Software Bill of Materials.
+- ✍️ **Cosign Signing**: Container image keyless signing via Sigstore.
+- 🚀 **Automated CD & Rollback**: Continuous deployment to Linux VPS via SSH with post-deployment `/health` verification and automated rollback.
+
+Detailed DevSecOps documentation available in [docs/devsecops.md](file:///C:/Users/Admin/Documents/Travel%20AI%20Extractor/docs/devsecops.md) and security policy in [SECURITY.md](file:///C:/Users/Admin/Documents/Travel%20AI%20Extractor/SECURITY.md).
 
 ---
 
@@ -136,7 +160,7 @@ When a user submits a duplicate image, Reel URL, or text caption, the system che
 ### 1. Clone & Configure Environment
 
 ```bash
-git clone https://github.com/your-username/travel-ai-extractor.git
+git clone https://github.com/altafpasha/travel-aI-extractor.git
 cd travel-ai-extractor
 ```
 

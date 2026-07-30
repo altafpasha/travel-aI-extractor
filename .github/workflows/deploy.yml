@@ -31,7 +31,7 @@ jobs:
 
       - name: Deploy to VPS via SSH & Run Health Verification
         if: steps.check_config.outputs.skip_deploy != 'true'
-        uses: appleboy/ssh-action@v1.2.0
+        uses: appleboy/ssh-action@v1.2.5
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USERNAME }}

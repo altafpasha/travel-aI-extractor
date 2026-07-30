@@ -1,8 +1,12 @@
 name: Continuous Deployment
 
 on:
-  push:
-    branches: [ "main" ]
+  workflow_run:
+    workflows: ["Continuous Integration", "DevSecOps Security Pipeline"]
+    types:
+      - completed
+    branches:
+      - main
   workflow_dispatch:
 
 concurrency:
@@ -13,6 +17,7 @@ jobs:
   deploy:
     name: Production Deploy to Linux VPS
     runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success') }}
     needs: [] # In production, configured with workflow dependencies or status checks
     steps:
       - name: Checkout Repository
@@ -42,10 +47,12 @@ jobs:
             set -e
             echo "Starting production deployment..."
             
-            # Navigate to project root in user home directory on VPS
-            cd ~/travel-ai-extractor || cd "$HOME/travel-ai-extractor"
-            
-            # Pull latest git commit
+            # Navigate to or clone project root on VPS
+            if [ ! -d "$HOME/travel-ai-extractor" ]; then
+              echo "Directory $HOME/travel-ai-extractor not found. Cloning repository..."
+              git clone https://github.com/altafpasha/travel-aI-extractor.git "$HOME/travel-ai-extractor"
+            fi
+            cd "$HOME/travel-ai-extractor"
             git pull origin main
             
             # Inject production environment file if provided

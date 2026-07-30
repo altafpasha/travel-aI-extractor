@@ -1,7 +1,8 @@
 import pytest
+
 from app.core.config import get_settings
-from app.services.multisource_service import MultiSourceEngine
 from app.schemas.multisource import UniversalExtractionRequest
+from app.services.multisource_service import MultiSourceEngine
 
 
 @pytest.mark.asyncio

@@ -1,6 +1,8 @@
 import io
+
 import pytest
 from PIL import Image, ImageDraw
+
 from app.services.ocr_service import OCRService
 
 

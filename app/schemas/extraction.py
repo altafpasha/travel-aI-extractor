@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, Field, ConfigDict, field_validator
 from typing import List, Optional
 
 
@@ -16,6 +16,13 @@ class TextExtractionRequest(BaseModel):
         description="Optional location context hint (e.g. region, city, country)",
         json_schema_extra={"example": "Japan"}
     )
+
+    @field_validator("text")
+    @classmethod
+    def validate_non_empty_text(cls, v: str) -> str:
+        if not v or not v.strip():
+            raise ValueError("Text content cannot be empty or whitespace only.")
+        return v.strip()
 
 
 class ExtractedPlaceRaw(BaseModel):

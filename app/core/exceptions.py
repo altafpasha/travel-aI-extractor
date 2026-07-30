@@ -35,6 +35,7 @@ async def travel_extractor_exception_handler(request: Request, exc: TravelExtrac
     return JSONResponse(
         status_code=exc.status_code,
         content={
+            "detail": exc.message,
             "error": exc.__class__.__name__,
             "message": exc.message
         }

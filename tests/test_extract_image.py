@@ -1,6 +1,8 @@
 import io
+
 import pytest
 from PIL import Image
+
 from app.core.config import get_settings
 
 

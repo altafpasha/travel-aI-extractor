@@ -20,7 +20,7 @@ class MultiSourceEngine:
             return TravelContent(
                 source_type="text",
                 caption=content,
-                metadata={"context_hint": request.context}
+                metadata={"context_hint": request.context, "context": request.context}
             )
 
         elif source_type in ("image_url", "video_url"):

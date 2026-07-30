@@ -1,6 +1,7 @@
 import pytest
-from app.services.gemini_service import GeminiService
+
 from app.core.exceptions import AIServiceException
+from app.services.gemini_service import GeminiService
 
 
 @pytest.mark.asyncio

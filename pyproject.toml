@@ -1,0 +1,29 @@
+[tool.pytest.ini_options]
+minversion = "7.0"
+addopts = "-v"
+testpaths = ["tests"]
+norecursedirs = ["scratch", ".git", ".venv", "build", "dist"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+exclude = [
+    ".git",
+    "__pycache__",
+    "scratch",
+    "uploads"
+]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]
+ignore = ["E501"]
+
+[tool.black]
+line-length = 120
+target-version = ['py312']
+exclude = '/(scratch|uploads|\.git|\.venv)/'
+
+[tool.isort]
+profile = "black"
+line_length = 120
+skip = ["scratch", "uploads"]

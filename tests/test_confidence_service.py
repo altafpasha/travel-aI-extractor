@@ -1,4 +1,5 @@
 import pytest
+
 from app.services.confidence_service import ConfidenceService
 
 

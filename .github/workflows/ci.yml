@@ -68,7 +68,7 @@ jobs:
           GOOGLE_PLACES_API_KEY: "mock-places-key"
           DATABASE_URL: "sqlite+aiosqlite:///./test.db"
         run: |
-          pytest -v --cov=app --cov-report=xml --cov-report=term-missing
+          pytest -v --cov=app --cov-report=xml --cov-report=term-missing tests/
 
       - name: Upload Test Coverage Artifact
         uses: actions/upload-artifact@v4

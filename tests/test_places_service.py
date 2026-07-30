@@ -1,4 +1,5 @@
 import pytest
+
 from app.services.places_service import GooglePlacesService
 
 

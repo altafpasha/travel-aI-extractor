@@ -52,7 +52,7 @@ services:
     container_name: travel_ai_extractor_api
     restart: unless-stopped
     ports:
-      - "${PORT:-8000}:8000"
+      - "127.0.0.1:${PORT:-8085}:8000"
     environment:
       DATABASE_URL: "postgresql+asyncpg://postgres:postgres@db:5432/travel_ai_extractor"
       REDIS_URL: "redis://redis:6379/0"

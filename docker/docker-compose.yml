@@ -56,7 +56,7 @@ services:
     container_name: travel_ai_extractor_api
     restart: unless-stopped
     ports:
-      - "8000:8000"
+      - "${PORT:-8000}:8000"
     environment:
       DATABASE_URL: "postgresql+asyncpg://postgres:postgres@db:5432/travel_ai_extractor"
       REDIS_URL: "redis://redis:6379/0"
@@ -69,6 +69,14 @@ services:
         condition: service_healthy
     networks:
       - travel_net
+      - coolify
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.travel-ai-api.rule=Host(`${DOMAIN:-travel-api.codesec.me}`)"
+      - "traefik.http.routers.travel-ai-api.entrypoints=http,https,web,websecure"
+      - "traefik.http.routers.travel-ai-api.tls=true"
+      - "traefik.http.routers.travel-ai-api.tls.certresolver=letsencrypt"
+      - "traefik.http.services.travel-ai-api.loadbalancer.server.port=8000"
     volumes:
       - uploads_data:/app/uploads
     deploy:
@@ -88,6 +96,8 @@ services:
 networks:
   travel_net:
     driver: bridge
+  coolify:
+    external: true
 
 volumes:
   postgres_data:

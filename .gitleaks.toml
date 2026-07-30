@@ -1,0 +1,18 @@
+# Gitleaks Configuration for Travel AI Extractor
+
+title = "Gitleaks Security Scanner Configuration"
+
+[allowlist]
+description = "Ignore generic example placeholders and documentation files"
+paths = [
+    '''README\.md''',
+    '''docs/.*''',
+    '''\.env\.example''',
+    '''\.env\.production\.example'''
+]
+regexes = [
+    '''YOUR_API_KEY''',
+    '''your_api_key_here''',
+    '''travel_sec_key_[0-9]+''',
+    '''mock-.*-key'''
+]

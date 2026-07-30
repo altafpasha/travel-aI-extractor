@@ -18,22 +18,41 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      - name: Check Deployment Configuration
+        id: check_config
+        run: |
+          if [ -z "${{ secrets.VPS_HOST }}" ]; then
+            echo "⚠️ VPS_HOST secret is not configured in GitHub Repository Secrets."
+            echo "Please configure VPS_HOST, VPS_USERNAME, and VPS_SSH_KEY in repository secrets to enable VPS deployment."
+            echo "skip_deploy=true" >> $GITHUB_OUTPUT
+          else
+            echo "skip_deploy=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Deploy to VPS via SSH & Run Health Verification
+        if: steps.check_config.outputs.skip_deploy != 'true'
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USERNAME }}
           key: ${{ secrets.VPS_SSH_KEY }}
           port: ${{ secrets.VPS_PORT || 22 }}
+          envs: PRODUCTION_ENV
           script: |
             set -e
             echo "Starting production deployment..."
             
-            # Navigate to project root on VPS
-            cd /opt/travel-ai-extractor || cd ~/travel-ai-extractor
+            # Navigate to project root in user home directory on VPS
+            cd ~/travel-ai-extractor || cd "$HOME/travel-ai-extractor"
             
             # Pull latest git commit
             git pull origin main
+            
+            # Inject production environment file if provided
+            if [ -n "$PRODUCTION_ENV" ]; then
+              echo "$PRODUCTION_ENV" > .env
+              echo "✅ Written production .env file from PRODUCTION_ENV GitHub secret."
+            fi
             
             # Rebuild and start production container stack
             echo "Rebuilding container stack via Docker Compose..."
@@ -44,7 +63,7 @@ jobs:
             
             # Health Verification
             echo "Executing post-deployment health check..."
-            HEALTH_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8000/health || echo "500")
+            HEALTH_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:${PORT:-8000}/health || echo "500")
             
             if [ "$HEALTH_STATUS" -eq 200 ]; then
               echo "✅ Health check PASSED (HTTP $HEALTH_STATUS). Deployment successful!"

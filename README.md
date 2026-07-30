@@ -208,7 +208,7 @@ Extracts travel locations from text, image URLs, or video URLs.
 **Request**:
 ```bash
 curl -X POST "http://localhost:8000/extract/universal" \
-  -H "X-API-Key: travel_sec_key_892374918237" \
+  -H "X-API-Key: YOUR_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
     "source_type": "text",
@@ -247,7 +247,7 @@ Submits heavy extractions to background workers and returns an instant `202 Acce
 **Enqueue Request**:
 ```bash
 curl -X POST "http://localhost:8000/extract/async" \
-  -H "X-API-Key: travel_sec_key_892374918237" \
+  -H "X-API-Key: YOUR_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
     "source_type": "video_url",
@@ -268,7 +268,7 @@ curl -X POST "http://localhost:8000/extract/async" \
 **Poll Job Status (`GET /jobs/{job_id}`)**:
 ```bash
 curl -X GET "http://localhost:8000/jobs/job_9823f4a12b3c" \
-  -H "X-API-Key: travel_sec_key_892374918237"
+  -H "X-API-Key: YOUR_API_KEY"
 ```
 
 ---
@@ -279,7 +279,7 @@ Uploads an image binary file directly.
 
 ```bash
 curl -X POST "http://localhost:8000/extract/image" \
-  -H "X-API-Key: travel_sec_key_892374918237" \
+  -H "X-API-Key: YOUR_API_KEY" \
   -F "file=@/path/to/screenshot.jpg"
 ```
 
@@ -289,7 +289,7 @@ curl -X POST "http://localhost:8000/extract/image" \
 
 ```bash
 curl -X POST "http://localhost:8000/extract/text" \
-  -H "X-API-Key: travel_sec_key_892374918237" \
+  -H "X-API-Key: YOUR_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"text": "Exploring Shibuya crossing in Tokyo Japan.", "context": "Tokyo Trip"}'
 ```
@@ -300,7 +300,7 @@ curl -X POST "http://localhost:8000/extract/text" \
 
 ```bash
 curl -X POST "http://localhost:8000/extract/video" \
-  -H "X-API-Key: travel_sec_key_892374918237" \
+  -H "X-API-Key: YOUR_API_KEY" \
   -F "file=@/path/to/reel.mp4"
 ```
 
@@ -309,11 +309,11 @@ curl -X POST "http://localhost:8000/extract/video" \
 ### 6. Cache Management & Log Pruning (`GET` & `DELETE` `/cache`)
 
 - **View Cache Statistics**:
-  `curl -H "X-API-Key: travel_sec_key_892374918237" http://localhost:8000/cache`
+  `curl -H "X-API-Key: YOUR_API_KEY" http://localhost:8000/cache`
 - **Clear All Cache Entries**:
-  `curl -X DELETE -H "X-API-Key: travel_sec_key_892374918237" http://localhost:8000/cache`
+  `curl -X DELETE -H "X-API-Key: YOUR_API_KEY" http://localhost:8000/cache`
 - **Purge Historical DB Logs Older Than N Days**:
-  `curl -X DELETE -H "X-API-Key: travel_sec_key_892374918237" "http://localhost:8000/cache/prune?days=30"`
+  `curl -X DELETE -H "X-API-Key: YOUR_API_KEY" "http://localhost:8000/cache/prune?days=30"`
 
 ---
 
@@ -324,7 +324,7 @@ Integrate **Travel AI Extractor** seamlessly into your mobile app or frontend ap
 ### TypeScript / React / React Native
 
 ```typescript
-const API_KEY = "travel_sec_key_892374918237";
+const API_KEY = "YOUR_API_KEY";
 
 interface ExtractedPlace {
   name: string;
@@ -379,7 +379,7 @@ extractTravelPlaces("Visited Shibuya crossing and Tokyo Tower", "Japan Trip")
 import httpx
 import asyncio
 
-API_KEY = "travel_sec_key_892374918237"
+API_KEY = "YOUR_API_KEY"
 
 async def extract_places(text_content: str, context: str = None):
     url = "http://localhost:8000/extract/universal"
@@ -409,7 +409,7 @@ for place in data['places']:
 ```swift
 import Foundation
 
-let apiKey = "travel_sec_key_892374918237"
+let apiKey = "YOUR_API_KEY"
 
 struct ExtractionRequest: Encodable {
     let source_type: String
@@ -490,7 +490,7 @@ data class UniversalResponse(
 interface TravelApiService {
     @POST("extract/universal")
     suspend fun extractPlaces(
-        @Header("X-API-Key") apiKey: String = "travel_sec_key_892374918237",
+        @Header("X-API-Key") apiKey: String = "YOUR_API_KEY",
         @Body request: UniversalRequest
     ): UniversalResponse
 }

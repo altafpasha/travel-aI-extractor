@@ -120,7 +120,7 @@ jobs:
           retention-days: 30
 
       - name: Install Cosign for Keyless Image Signing
-        uses: sigstore/cosign-installer@v3.8.1
+        uses: sigstore/cosign-installer@v4.1.2
 
       - name: Document Cosign Image Signing Readiness
         run: |

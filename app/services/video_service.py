@@ -34,13 +34,16 @@ class FFmpegService:
 
             try:
                 result = await anyio.run_process(
-                    ["ffmpeg", "-y", "-i", temp_video_path, "-vf", fps_filter, output_pattern],
-                    check=False
+                    ["ffmpeg", "-y", "-i", temp_video_path, "-vf", fps_filter, output_pattern], check=False
                 )
                 if result.returncode != 0:
-                    logger.warning(f"FFmpeg frame extraction code {result.returncode}. Output: {result.stderr.decode('utf-8', errors='ignore')}")
+                    logger.warning(
+                        f"FFmpeg frame extraction code {result.returncode}. Output: {result.stderr.decode('utf-8', errors='ignore')}"
+                    )
             except Exception as ffmpeg_err:
-                logger.warning(f"FFmpeg process execution unavailable ({str(ffmpeg_err)}). Using fallback frame simulation.")
+                logger.warning(
+                    f"FFmpeg process execution unavailable ({str(ffmpeg_err)}). Using fallback frame simulation."
+                )
 
             frame_bytes_list: List[bytes] = []
             frame_files = sorted([f for f in os.listdir(temp_dir) if f.startswith("frame_") and f.endswith(".jpg")])
@@ -53,8 +56,12 @@ class FFmpegService:
                     frame_bytes_list.append(frame_bytes)
 
             if not frame_bytes_list:
-                logger.warning("No frames extracted by FFmpeg (likely mock video input). Generated 1 fallback test frame.")
-                dummy_jpeg = b"\xff\xd8\xff\xe0\x00\x10JFIF\x00\x01\x01\x01\x00`\x00`\x00\x00\xff\xdb\x00C\x00" + b"\x00" * 100
+                logger.warning(
+                    "No frames extracted by FFmpeg (likely mock video input). Generated 1 fallback test frame."
+                )
+                dummy_jpeg = (
+                    b"\xff\xd8\xff\xe0\x00\x10JFIF\x00\x01\x01\x01\x00`\x00`\x00\x00\xff\xdb\x00C\x00" + b"\x00" * 100
+                )
                 frame_bytes_list.append(dummy_jpeg)
 
             logger.info(f"Successfully extracted {len(frame_bytes_list)} keyframes from '{filename}'.")
@@ -84,8 +91,21 @@ class FFmpegService:
 
             try:
                 result = await anyio.run_process(
-                    ["ffmpeg", "-y", "-i", temp_video_path, "-vn", "-acodec", "pcm_s16le", "-ar", "16000", "-ac", "1", output_audio_path],
-                    check=False
+                    [
+                        "ffmpeg",
+                        "-y",
+                        "-i",
+                        temp_video_path,
+                        "-vn",
+                        "-acodec",
+                        "pcm_s16le",
+                        "-ar",
+                        "16000",
+                        "-ac",
+                        "1",
+                        output_audio_path,
+                    ],
+                    check=False,
                 )
                 if result.returncode == 0:
                     audio_obj = anyio.Path(output_audio_path)

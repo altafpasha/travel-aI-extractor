@@ -381,24 +381,22 @@ import asyncio
 
 API_KEY = "YOUR_API_KEY"
 
+
 async def extract_places(text_content: str, context: str = None):
     url = "http://localhost:8000/extract/universal"
     headers = {"X-API-Key": API_KEY}
-    payload = {
-        "source_type": "text",
-        "content": text_content,
-        "context": context
-    }
-    
+    payload = {"source_type": "text", "content": text_content, "context": context}
+
     async with httpx.AsyncClient() as client:
         response = await client.post(url, json=payload, headers=headers, timeout=15.0)
         response.raise_for_status()
         return response.json()
 
+
 # Usage
 data = asyncio.run(extract_places("Exploring Fushimi Inari in Kyoto"))
 print(f"Destination: {data['destination']}")
-for place in data['places']:
+for place in data["places"]:
     print(f" - {place['name']} ({place['confidence']}% confidence)")
 ```
 

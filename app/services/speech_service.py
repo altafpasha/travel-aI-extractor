@@ -35,8 +35,8 @@ class AudioSpeechService:
                 model="gemini-2.5-flash",
                 contents=[
                     types.Part.from_bytes(data=audio_bytes, mime_type="audio/wav"),
-                    "Transcribe the spoken speech in this audio track accurately into clear English text."
-                ]
+                    "Transcribe the spoken speech in this audio track accurately into clear English text.",
+                ],
             )
             transcription = response.text.strip()
             logger.info(f"Audio speech successfully transcribed ({len(transcription)} chars)")

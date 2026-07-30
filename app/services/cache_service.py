@@ -1,4 +1,3 @@
-import json
 from typing import Any, Dict, Optional
 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -15,11 +14,7 @@ class CacheService:
         self.repository = CacheRepository(db_session)
         self.extraction_repo = ExtractionRepository(db_session)
 
-    async def get_cached_extraction(
-        self,
-        file_hash: str,
-        min_confidence: int = 70
-    ) -> Optional[Dict[str, Any]]:
+    async def get_cached_extraction(self, file_hash: str, min_confidence: int = 70) -> Optional[Dict[str, Any]]:
         """
         Looks up cached extraction by content SHA256 checksum.
         If a duplicate match is found AND its places meet the high-confidence threshold (>= 70%),
@@ -39,21 +34,14 @@ class CacheService:
                 )
                 return None
 
-        logger.info(f"Duplicate high-confidence match found for hash '{file_hash[:10]}...'. Returning instant response.")
+        logger.info(
+            f"Duplicate high-confidence match found for hash '{file_hash[:10]}...'. Returning instant response."
+        )
         return cached_data
 
-    async def save_extraction_cache(
-        self,
-        file_hash: str,
-        destination: Optional[str],
-        response_dict: Dict[str, Any]
-    ):
+    async def save_extraction_cache(self, file_hash: str, destination: Optional[str], response_dict: Dict[str, Any]):
         """Saves a verified extraction response in the smart cache database."""
-        await self.repository.save_cache(
-            file_hash=file_hash,
-            destination=destination,
-            response_dict=response_dict
-        )
+        await self.repository.save_cache(file_hash=file_hash, destination=destination, response_dict=response_dict)
 
     async def get_stats(self) -> Dict[str, Any]:
         """Retrieves global cache hit/miss statistics."""

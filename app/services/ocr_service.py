@@ -23,13 +23,16 @@ class OCRService:
 
             try:
                 import pytesseract
+
                 extracted_text = pytesseract.image_to_string(image)
                 cleaned = extracted_text.strip()
                 if cleaned:
                     logger.info(f"OCR successfully extracted text from image ({len(cleaned)} chars)")
                     return cleaned
             except (ImportError, Exception) as tesseract_err:
-                logger.debug(f"Pytesseract OCR binary unexecutable or missing ({str(tesseract_err)}). Falling back smoothly.")
+                logger.debug(
+                    f"Pytesseract OCR binary unexecutable or missing ({str(tesseract_err)}). Falling back smoothly."
+                )
 
             return None
         except Exception as e:

@@ -12,7 +12,7 @@ async def test_extract_video_success(client):
 
     files = {"file": ("travel_reel.mp4", dummy_video_bytes, "video/mp4")}
 
-    res = await client.post("/extract/video", files=files, headers=headers)
+    res = await client.post(f"{settings.API_V1_STR}/extract/video", files=files, headers=headers)
     assert res.status_code == 200
     data = res.json()
     assert "destination" in data
@@ -27,7 +27,7 @@ async def test_extract_video_invalid_extension(client):
     headers = {"X-API-Key": settings.API_KEY}
     files = {"file": ("document.pdf", b"pdf content", "application/pdf")}
 
-    res = await client.post("/extract/video", files=files, headers=headers)
+    res = await client.post(f"{settings.API_V1_STR}/extract/video", files=files, headers=headers)
     assert res.status_code == 400
     assert "Unsupported video extension" in res.json()["detail"]
 
@@ -39,6 +39,6 @@ async def test_extract_video_empty_file(client):
     headers = {"X-API-Key": settings.API_KEY}
     files = {"file": ("empty_reel.mp4", b"", "video/mp4")}
 
-    res = await client.post("/extract/video", files=files, headers=headers)
+    res = await client.post(f"{settings.API_V1_STR}/extract/video", files=files, headers=headers)
     assert res.status_code == 400
     assert "Uploaded video file is empty" in res.json()["detail"]

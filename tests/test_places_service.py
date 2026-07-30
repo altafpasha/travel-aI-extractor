@@ -7,11 +7,7 @@ from app.services.places_service import GooglePlacesService
 async def test_mock_verify_place():
     """Tests place verification and enrichment fallback."""
     service = GooglePlacesService(api_key="mock-places-key")
-    place_input = {
-        "name": "Fushimi Inari Shrine",
-        "city": "Kyoto",
-        "country": "Japan"
-    }
+    place_input = {"name": "Fushimi Inari Shrine", "city": "Kyoto", "country": "Japan"}
     result = await service.verify_and_enrich_place(place_input)
     assert result.name == "Fushimi Inari Shrine"
     assert result.city == "Kyoto"

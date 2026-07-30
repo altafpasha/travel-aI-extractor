@@ -1,7 +1,7 @@
 import asyncio
 import json
-from typing import Optional
 import uuid
+from typing import Optional
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -21,10 +21,7 @@ class QueueService:
         self.db_session = db_session
         self.repo = ExtractionRepository(db_session)
 
-    async def enqueue_universal_extraction(
-        self,
-        request: UniversalExtractionRequest
-    ) -> AsyncExtractionResponse:
+    async def enqueue_universal_extraction(self, request: UniversalExtractionRequest) -> AsyncExtractionResponse:
         """
         Creates a new queued job record and triggers background worker processing.
         Returns instant 202 Accepted status payload.
@@ -36,11 +33,7 @@ class QueueService:
         # Spawn background processing task asynchronously
         asyncio.create_task(self._process_background_job(job_id, request))
 
-        return AsyncExtractionResponse(
-            job_id=job_id,
-            status="queued",
-            check_status_url=f"/jobs/{job_id}"
-        )
+        return AsyncExtractionResponse(job_id=job_id, status="queued", check_status_url=f"/jobs/{job_id}")
 
     enqueue_job = enqueue_universal_extraction
 
@@ -58,17 +51,10 @@ class QueueService:
                 logger.error(f"Failed to parse stored job result JSON: {str(e)}")
 
         return JobStatusResponse(
-            job_id=job.job_id,
-            status=job.status,
-            result=parsed_result,
-            error_message=job.error_message
+            job_id=job.job_id, status=job.status, result=parsed_result, error_message=job.error_message
         )
 
-    async def _process_background_job(
-        self,
-        job_id: str,
-        request: UniversalExtractionRequest
-    ) -> None:
+    async def _process_background_job(self, job_id: str, request: UniversalExtractionRequest) -> None:
         """Internal worker executing extraction logic asynchronously in background."""
         try:
             await self.repo.update_job_status(job_id, status="processing")
@@ -77,16 +63,8 @@ class QueueService:
             extraction_service = ExtractionService(db_session=self.db_session)
             result = await extraction_service.process_travel_content(content)
 
-            await self.repo.update_job_status(
-                job_id,
-                status="completed",
-                result_dict=result.model_dump()
-            )
+            await self.repo.update_job_status(job_id, status="completed", result_dict=result.model_dump())
             logger.info(f"Async extraction job '{job_id}' completed successfully.")
         except Exception as e:
             logger.error(f"Async extraction job '{job_id}' failed: {str(e)}")
-            await self.repo.update_job_status(
-                job_id,
-                status="failed",
-                error_message=str(e)
-            )
+            await self.repo.update_job_status(job_id, status="failed", error_message=str(e))

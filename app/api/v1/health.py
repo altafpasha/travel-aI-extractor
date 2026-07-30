@@ -17,8 +17,4 @@ async def root() -> str:
 async def health_check() -> HealthResponse:
     """Returns application health and configuration metadata."""
     settings = get_settings()
-    return HealthResponse(
-        status="ok",
-        app_name=settings.PROJECT_NAME,
-        environment=settings.ENVIRONMENT
-    )
+    return HealthResponse(status="ok", app_name=settings.PROJECT_NAME, environment=settings.ENVIRONMENT)

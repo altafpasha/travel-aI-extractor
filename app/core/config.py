@@ -5,6 +5,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     """Application Settings managed via environment variables and .env file."""
+
     PROJECT_NAME: str = "Travel AI Extractor"
     API_V1_STR: str = ""
     ENVIRONMENT: str = "development"
@@ -39,12 +40,7 @@ class Settings(BaseSettings):
             return self.DATABASE_URL
         return self.DATABASE_URL
 
-    model_config = SettingsConfigDict(
-        env_file=".env",
-        env_file_encoding="utf-8",
-        case_sensitive=True,
-        extra="ignore"
-    )
+    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", case_sensitive=True, extra="ignore")
 
 
 @lru_cache()

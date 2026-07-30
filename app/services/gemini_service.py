@@ -73,7 +73,12 @@ class GeminiService:
 
     async def extract_places_from_image(self, image_bytes: bytes, mime_type: str = "image/jpeg") -> Dict[str, Any]:
         """Sends image bytes to Gemini Vision API and returns parsed destination & places dict."""
-        if not self.api_key or self.api_key.startswith("your-") or self.api_key.startswith("mock-") or not self.api_key.startswith("AIza"):
+        if (
+            not self.api_key
+            or self.api_key.startswith("your-")
+            or self.api_key.startswith("mock-")
+            or not self.api_key.startswith("AIza")
+        ):
             logger.warning("Gemini API key is unconfigured or mock. Returning fallback smart mock response for image.")
             return self._mock_extraction_response(text=self._try_ocr_text_from_image(image_bytes))
 
@@ -85,10 +90,7 @@ class GeminiService:
                 client = genai.Client(api_key=self.api_key)
                 response = client.models.generate_content(
                     model=self.model,
-                    contents=[
-                        types.Part.from_bytes(data=image_bytes, mime_type=mime_type),
-                        IMAGE_PROMPT_TEMPLATE
-                    ]
+                    contents=[types.Part.from_bytes(data=image_bytes, mime_type=mime_type), IMAGE_PROMPT_TEMPLATE],
                 )
                 return self._parse_json_response(response.text)
             except (ImportError, Exception) as sdk_err:
@@ -122,31 +124,28 @@ class GeminiService:
                         seen_names.add(name.lower())
                         merged_places.append(place)
 
-        return {
-            "destination": primary_destination or "Kyoto",
-            "places": merged_places
-        }
+        return {"destination": primary_destination or "Kyoto", "places": merged_places}
 
     async def extract_places_from_text(self, text: str, context: Optional[str] = None) -> Dict[str, Any]:
         """Sends travel caption/text to Gemini model and returns parsed destination & places dict."""
-        if not self.api_key or self.api_key.startswith("your-") or self.api_key.startswith("mock-") or not self.api_key.startswith("AIza"):
+        if (
+            not self.api_key
+            or self.api_key.startswith("your-")
+            or self.api_key.startswith("mock-")
+            or not self.api_key.startswith("AIza")
+        ):
             logger.warning("Gemini API key is unconfigured or mock. Returning fallback smart mock response for text.")
             return self._mock_extraction_response(text=text)
 
         context_section = f"Context location hint: {context}" if context else ""
-        prompt = TEXT_PROMPT_TEMPLATE.format(
-            context_section=context_section,
-            text_content=text
-        )
+        prompt = TEXT_PROMPT_TEMPLATE.format(context_section=context_section, text_content=text)
 
         try:
             try:
                 from google import genai
+
                 client = genai.Client(api_key=self.api_key)
-                response = client.models.generate_content(
-                    model=self.model,
-                    contents=prompt
-                )
+                response = client.models.generate_content(model=self.model, contents=prompt)
                 return self._parse_json_response(response.text)
             except (ImportError, Exception) as sdk_err:
                 logger.debug(f"GenAI SDK call failed ({str(sdk_err)}), falling back to REST API for text.")
@@ -160,6 +159,7 @@ class GeminiService:
         """Helper attempting OCR on image bytes to detect text hints."""
         try:
             from app.services.ocr_service import OCRService
+
             return OCRService.extract_text_from_image(image_bytes)
         except Exception:
             return None
@@ -167,15 +167,18 @@ class GeminiService:
     async def _call_gemini_rest_api_image(self, image_bytes: bytes, mime_type: str) -> Dict[str, Any]:
         """Fallback direct REST API call for images."""
         import base64
+
         base64_data = base64.b64encode(image_bytes).decode("utf-8")
         url = f"https://generativelanguage.googleapis.com/v1beta/models/{self.model}:generateContent?key={self.api_key}"
         payload = {
-            "contents": [{
-                "parts": [
-                    {"inline_data": {"mime_type": mime_type, "data": base64_data}},
-                    {"text": IMAGE_PROMPT_TEMPLATE}
-                ]
-            }]
+            "contents": [
+                {
+                    "parts": [
+                        {"inline_data": {"mime_type": mime_type, "data": base64_data}},
+                        {"text": IMAGE_PROMPT_TEMPLATE},
+                    ]
+                }
+            ]
         }
         async with httpx.AsyncClient(timeout=30.0) as client:
             res = await client.post(url, json=payload)
@@ -187,9 +190,7 @@ class GeminiService:
     async def _call_gemini_rest_api_text(self, prompt: str) -> Dict[str, Any]:
         """Fallback direct REST API call for text."""
         url = f"https://generativelanguage.googleapis.com/v1beta/models/{self.model}:generateContent?key={self.api_key}"
-        payload = {
-            "contents": [{"parts": [{"text": prompt}]}]
-        }
+        payload = {"contents": [{"parts": [{"text": prompt}]}]}
         async with httpx.AsyncClient(timeout=30.0) as client:
             res = await client.post(url, json=payload)
             res.raise_for_status()
@@ -206,21 +207,20 @@ class GeminiService:
             parsed = json.loads(cleaned_text)
             destination = parsed.get("destination")
             places_raw = parsed.get("places", [])
-            
+
             validated_places = []
             for p in places_raw:
                 if isinstance(p, dict) and "name" in p and p["name"]:
-                    validated_places.append({
-                        "name": str(p["name"]).strip(),
-                        "city": str(p.get("city", "")).strip() if p.get("city") else None,
-                        "country": str(p.get("country", "")).strip() if p.get("country") else None,
-                        "category": str(p.get("category", "")).strip() if p.get("category") else None,
-                    })
+                    validated_places.append(
+                        {
+                            "name": str(p["name"]).strip(),
+                            "city": str(p.get("city", "")).strip() if p.get("city") else None,
+                            "country": str(p.get("country", "")).strip() if p.get("country") else None,
+                            "category": str(p.get("category", "")).strip() if p.get("category") else None,
+                        }
+                    )
 
-            return {
-                "destination": destination,
-                "places": validated_places
-            }
+            return {"destination": destination, "places": validated_places}
         except json.JSONDecodeError:
             logger.error(f"Failed to parse JSON output from Gemini response: {cleaned_text}")
             raise AIServiceException("AI model response was not valid JSON.")
@@ -235,8 +235,8 @@ class GeminiService:
                 "places": [
                     {"name": "Eiffel Tower", "city": "Paris", "country": "France", "category": "Landmark"},
                     {"name": "Louvre Museum", "city": "Paris", "country": "France", "category": "Museum"},
-                    {"name": "Notre-Dame Cathedral", "city": "Paris", "country": "France", "category": "Landmark"}
-                ]
+                    {"name": "Notre-Dame Cathedral", "city": "Paris", "country": "France", "category": "Landmark"},
+                ],
             }
 
         if "rome" in lower_text or "colosseum" in lower_text:
@@ -244,8 +244,8 @@ class GeminiService:
                 "destination": "Rome",
                 "places": [
                     {"name": "Colosseum", "city": "Rome", "country": "Italy", "category": "Landmark"},
-                    {"name": "Trevi Fountain", "city": "Rome", "country": "Italy", "category": "Landmark"}
-                ]
+                    {"name": "Trevi Fountain", "city": "Rome", "country": "Italy", "category": "Landmark"},
+                ],
             }
 
         if "iceland" in lower_text or "blue lagoon" in lower_text or "gullfoss" in lower_text:
@@ -253,8 +253,8 @@ class GeminiService:
                 "destination": "Iceland",
                 "places": [
                     {"name": "Blue Lagoon", "city": "Grindavik", "country": "Iceland", "category": "Spa"},
-                    {"name": "Skogafoss Waterfall", "city": "Skogar", "country": "Iceland", "category": "Waterfall"}
-                ]
+                    {"name": "Skogafoss Waterfall", "city": "Skogar", "country": "Iceland", "category": "Waterfall"},
+                ],
             }
 
         if "bali" in lower_text or "ubud" in lower_text or "uluwatu" in lower_text:
@@ -262,8 +262,13 @@ class GeminiService:
                 "destination": "Bali",
                 "places": [
                     {"name": "Uluwatu Temple", "city": "Bali", "country": "Indonesia", "category": "Temple"},
-                    {"name": "Tegallalang Rice Terrace", "city": "Ubud", "country": "Indonesia", "category": "Attraction"}
-                ]
+                    {
+                        "name": "Tegallalang Rice Terrace",
+                        "city": "Ubud",
+                        "country": "Indonesia",
+                        "category": "Attraction",
+                    },
+                ],
             }
 
         if "tokyo" in lower_text or "shibuya" in lower_text:
@@ -271,18 +276,11 @@ class GeminiService:
                 "destination": "Tokyo",
                 "places": [
                     {"name": "Shibuya Crossing", "city": "Tokyo", "country": "Japan", "category": "Landmark"},
-                    {"name": "Tokyo Tower", "city": "Tokyo", "country": "Japan", "category": "Landmark"}
-                ]
+                    {"name": "Tokyo Tower", "city": "Tokyo", "country": "Japan", "category": "Landmark"},
+                ],
             }
 
         return {
             "destination": "Kyoto",
-            "places": [
-                {
-                    "name": "Fushimi Inari Shrine",
-                    "city": "Kyoto",
-                    "country": "Japan",
-                    "category": "Landmark"
-                }
-            ]
+            "places": [{"name": "Fushimi Inari Shrine", "city": "Kyoto", "country": "Japan", "category": "Landmark"}],
         }

@@ -1,6 +1,6 @@
-from datetime import datetime, timedelta, timezone
 import json
-from typing import Any, Dict, List, Optional
+from datetime import datetime, timedelta, timezone
+from typing import Any, Dict, Optional
 
 from sqlalchemy import DateTime, Float, Integer, String, Text, delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -12,6 +12,7 @@ from app.database.connection import Base
 
 class ExtractionLog(Base):
     """DB Model for recording historical extraction logs."""
+
     __tablename__ = "extraction_logs"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
@@ -26,6 +27,7 @@ class ExtractionLog(Base):
 
 class CacheEntry(Base):
     """DB Model for storing smart cache entries keyed by content SHA256 hash."""
+
     __tablename__ = "cache_entries"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
@@ -35,18 +37,19 @@ class CacheEntry(Base):
     hit_count: Mapped[int] = mapped_column(Integer, default=0)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True),
-        default=lambda: datetime.now(timezone.utc),
-        onupdate=lambda: datetime.now(timezone.utc)
+        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc)
     )
 
 
 class ExtractionJob(Base):
     """DB Model for tracking asynchronous extraction background queue jobs."""
+
     __tablename__ = "extraction_jobs"
 
     job_id: Mapped[str] = mapped_column(String(64), primary_key=True, index=True)
-    status: Mapped[str] = mapped_column(String(30), default="queued", index=True)  # queued, processing, completed, failed
+    status: Mapped[str] = mapped_column(
+        String(30), default="queued", index=True
+    )  # queued, processing, completed, failed
     result_json: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     error_message: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
@@ -66,7 +69,7 @@ class ExtractionRepository:
         places_count: int,
         raw_response: Dict[str, Any],
         execution_time_seconds: float,
-        file_hash: Optional[str] = None
+        file_hash: Optional[str] = None,
     ) -> ExtractionLog:
         """Saves an extraction audit record to database."""
         try:
@@ -76,7 +79,7 @@ class ExtractionRepository:
                 destination=destination,
                 places_count=places_count,
                 raw_response=json.dumps(raw_response),
-                execution_time_seconds=execution_time_seconds
+                execution_time_seconds=execution_time_seconds,
             )
             self.session.add(log_entry)
             await self.session.flush()
@@ -104,7 +107,7 @@ class ExtractionRepository:
         job_id: str,
         status: str,
         result_dict: Optional[Dict[str, Any]] = None,
-        error_message: Optional[str] = None
+        error_message: Optional[str] = None,
     ) -> Optional[ExtractionJob]:
         """Updates job status, result, and completion timestamp."""
         job = await self.get_job(job_id)
@@ -154,12 +157,7 @@ class CacheRepository:
             logger.error(f"Failed to query cache by hash: {str(e)}")
             return None
 
-    async def save_cache(
-        self,
-        file_hash: str,
-        destination: Optional[str],
-        response_dict: Dict[str, Any]
-    ) -> CacheEntry:
+    async def save_cache(self, file_hash: str, destination: Optional[str], response_dict: Dict[str, Any]) -> CacheEntry:
         """Stores or updates a cached extraction entry."""
         try:
             stmt = select(CacheEntry).where(CacheEntry.file_hash == file_hash)
@@ -171,10 +169,7 @@ class CacheRepository:
                 entry.cached_response = json.dumps(response_dict)
             else:
                 entry = CacheEntry(
-                    file_hash=file_hash,
-                    destination=destination,
-                    cached_response=json.dumps(response_dict),
-                    hit_count=0
+                    file_hash=file_hash, destination=destination, cached_response=json.dumps(response_dict), hit_count=0
                 )
                 self.session.add(entry)
 
@@ -196,10 +191,7 @@ class CacheRepository:
             total_hits_res = await self.session.execute(total_hits_stmt)
             total_hits = total_hits_res.scalar() or 0
 
-            return {
-                "total_entries": total_entries,
-                "total_hits": total_hits
-            }
+            return {"total_entries": total_entries, "total_hits": total_hits}
         except Exception as e:
             logger.error(f"Failed to compute cache stats: {str(e)}")
             return {"total_entries": 0, "total_hits": 0}

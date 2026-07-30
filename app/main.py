@@ -2,6 +2,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import PlainTextResponse
 
 from app.api.v1.router import api_v1_router
 from app.core.config import get_settings
@@ -29,7 +30,7 @@ def create_application() -> FastAPI:
         description="Production-grade AI engine for extracting structured travel places from images and screenshots.",
         docs_url="/docs",
         redoc_url="/redoc",
-        lifespan=lifespan
+        lifespan=lifespan,
     )
 
     # Configure CORS
@@ -46,6 +47,10 @@ def create_application() -> FastAPI:
 
     # Register API Routers
     app.include_router(api_v1_router, prefix=settings.API_V1_STR)
+
+    @app.get("/", response_class=PlainTextResponse, summary="Root endpoint")
+    async def root() -> str:
+        return "Travel AI Extractor Running"
 
     return app
 

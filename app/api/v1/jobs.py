@@ -14,11 +14,10 @@ router = APIRouter(tags=["Async Queue"], dependencies=[Depends(verify_api_key)])
     "/extract/async",
     response_model=JobEnqueueResponse,
     status_code=status.HTTP_202_ACCEPTED,
-    summary="Enqueue heavy extraction job for asynchronous background processing"
+    summary="Enqueue heavy extraction job for asynchronous background processing",
 )
 async def enqueue_extraction_job(
-    payload: UniversalExtractionRequest,
-    db: AsyncSession = Depends(get_db)
+    payload: UniversalExtractionRequest, db: AsyncSession = Depends(get_db)
 ) -> JobEnqueueResponse:
     """
     Submits extraction payload to asynchronous queue workers.
@@ -33,22 +32,16 @@ async def enqueue_extraction_job(
     "/jobs/{job_id}",
     response_model=JobStatusResponse,
     status_code=status.HTTP_200_OK,
-    summary="Check status and retrieve results for an asynchronous extraction job"
+    summary="Check status and retrieve results for an asynchronous extraction job",
 )
-async def get_job_status(
-    job_id: str,
-    db: AsyncSession = Depends(get_db)
-) -> JobStatusResponse:
+async def get_job_status(job_id: str, db: AsyncSession = Depends(get_db)) -> JobStatusResponse:
     """
     Polls the status of an enqueued job by job_id.
     """
     queue_service = QueueService(db_session=db)
     job_status = await queue_service.get_job_status(job_id)
-    
+
     if not job_status:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Async job '{job_id}' not found."
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Async job '{job_id}' not found.")
 
     return job_status

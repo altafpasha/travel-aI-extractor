@@ -20,12 +20,12 @@ router = APIRouter(prefix="/extract", tags=["Extraction"], dependencies=[Depends
     responses={
         400: {"model": ExtractionErrorResponse, "description": "Invalid image file or format"},
         401: {"description": "Unauthorized - Missing or invalid X-API-Key header"},
-        502: {"model": ExtractionErrorResponse, "description": "Upstream AI/Places API failure"}
-    }
+        502: {"model": ExtractionErrorResponse, "description": "Upstream AI/Places API failure"},
+    },
 )
 async def extract_image(
     file: UploadFile = File(..., description="Image or screenshot file (JPG, PNG, WebP)"),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
 ) -> ImageExtractionResponse:
     """
     Extracts structured travel destinations and places from an uploaded image.
@@ -35,10 +35,7 @@ async def extract_image(
     extraction_service = ExtractionService(db_session=db)
     mime_type = file.content_type or "image/jpeg"
     response = await extraction_service.process_image_extraction(
-        image_bytes=file_bytes,
-        filename=filename,
-        file_hash=file_hash,
-        mime_type=mime_type
+        image_bytes=file_bytes, filename=filename, file_hash=file_hash, mime_type=mime_type
     )
 
     return response
@@ -52,21 +49,15 @@ async def extract_image(
     responses={
         400: {"model": ExtractionErrorResponse, "description": "Invalid request payload"},
         401: {"description": "Unauthorized - Missing or invalid X-API-Key header"},
-        502: {"model": ExtractionErrorResponse, "description": "Upstream AI/Places API failure"}
-    }
+        502: {"model": ExtractionErrorResponse, "description": "Upstream AI/Places API failure"},
+    },
 )
-async def extract_text(
-    payload: TextExtractionRequest,
-    db: AsyncSession = Depends(get_db)
-) -> ImageExtractionResponse:
+async def extract_text(payload: TextExtractionRequest, db: AsyncSession = Depends(get_db)) -> ImageExtractionResponse:
     """
     Extracts structured travel destinations and places from input text or social media caption.
     """
     extraction_service = ExtractionService(db_session=db)
-    response = await extraction_service.process_text_extraction(
-        text=payload.text,
-        context=payload.context
-    )
+    response = await extraction_service.process_text_extraction(text=payload.text, context=payload.context)
 
     return response
 
@@ -79,12 +70,12 @@ async def extract_text(
     responses={
         400: {"model": ExtractionErrorResponse, "description": "Invalid video file or format"},
         401: {"description": "Unauthorized - Missing or invalid X-API-Key header"},
-        502: {"model": ExtractionErrorResponse, "description": "Upstream AI/Places API failure"}
-    }
+        502: {"model": ExtractionErrorResponse, "description": "Upstream AI/Places API failure"},
+    },
 )
 async def extract_video(
     file: UploadFile = File(..., description="Video file (MP4, MOV, WebM) under 50MB"),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
 ) -> ImageExtractionResponse:
     """
     Extracts structured travel destinations and places from a video file.
@@ -93,9 +84,7 @@ async def extract_video(
 
     extraction_service = ExtractionService(db_session=db)
     response = await extraction_service.process_video_extraction(
-        video_bytes=video_bytes,
-        filename=filename,
-        file_hash=file_hash
+        video_bytes=video_bytes, filename=filename, file_hash=file_hash
     )
 
     return response
@@ -109,12 +98,11 @@ async def extract_video(
     responses={
         400: {"model": ExtractionErrorResponse, "description": "Invalid source content"},
         401: {"description": "Unauthorized - Missing or invalid X-API-Key header"},
-        502: {"model": ExtractionErrorResponse, "description": "Upstream API failure"}
-    }
+        502: {"model": ExtractionErrorResponse, "description": "Upstream API failure"},
+    },
 )
 async def extract_universal(
-    payload: UniversalExtractionRequest,
-    db: AsyncSession = Depends(get_db)
+    payload: UniversalExtractionRequest, db: AsyncSession = Depends(get_db)
 ) -> ImageExtractionResponse:
     """
     Universal Public API accepting text, media URLs, or social media content:

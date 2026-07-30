@@ -3,7 +3,6 @@ from typing import Any, Dict, Optional
 import httpx
 
 from app.core.config import get_settings
-from app.core.exceptions import PlacesServiceException
 from app.core.logging import logger
 from app.schemas.extraction import PlaceLocation
 from app.services.confidence_service import ConfidenceService
@@ -19,9 +18,7 @@ class GooglePlacesService:
         self.details_url = "https://maps.googleapis.com/maps/api/place/details/json"
 
     async def verify_and_enrich_place(
-        self,
-        place_data: Dict[str, Any],
-        text_context: Optional[str] = None
+        self, place_data: Dict[str, Any], text_context: Optional[str] = None
     ) -> PlaceLocation:
         """
         Verifies place against Google Places API and returns an enriched PlaceLocation with confidence score.
@@ -31,11 +28,7 @@ class GooglePlacesService:
         country = place_data.get("country")
 
         if not name:
-            return PlaceLocation(
-                name="Unknown Place",
-                confidence=0,
-                verified=False
-            )
+            return PlaceLocation(name="Unknown Place", confidence=0, verified=False)
 
         if not self.api_key or self.api_key == "your-google-places-api-key-here" or self.api_key == "mock-places-key":
             logger.info(f"Google Places API key is mock/unconfigured. Returning mock verified result for '{name}'.")
@@ -53,10 +46,10 @@ class GooglePlacesService:
                     "input": query,
                     "inputtype": "textquery",
                     "fields": "place_id,name,formatted_address,geometry,rating,user_ratings_total,photos",
-                    "key": self.api_key
+                    "key": self.api_key,
                 }
                 resp = await client.get(self.find_place_url, params=params)
-                
+
                 if resp.status_code != 200:
                     logger.error(f"Google Places API error status {resp.status_code}: {resp.text}")
                     return self._fallback_unverified_place(name, city, country, text_context=text_context)
@@ -88,7 +81,7 @@ class GooglePlacesService:
                     verified=True,
                     place_id=place_id,
                     address=formatted_address,
-                    text_context=text_context
+                    text_context=text_context,
                 )
 
                 return PlaceLocation(
@@ -100,7 +93,7 @@ class GooglePlacesService:
                     latitude=lat,
                     longitude=lng,
                     place_id=place_id,
-                    verified=True
+                    verified=True,
                 )
 
         except Exception as e:
@@ -108,10 +101,7 @@ class GooglePlacesService:
             return self._fallback_unverified_place(name, city, country, text_context=text_context)
 
     def _extract_address_components(
-        self,
-        formatted_address: Optional[str],
-        default_city: Optional[str],
-        default_country: Optional[str]
+        self, formatted_address: Optional[str], default_city: Optional[str], default_country: Optional[str]
     ) -> tuple[Optional[str], Optional[str]]:
         """Extract city and country from formatted address string if available."""
         if not formatted_address:
@@ -123,11 +113,7 @@ class GooglePlacesService:
         return city, country
 
     def _fallback_unverified_place(
-        self,
-        name: str,
-        city: Optional[str],
-        country: Optional[str],
-        text_context: Optional[str] = None
+        self, name: str, city: Optional[str], country: Optional[str], text_context: Optional[str] = None
     ) -> PlaceLocation:
         """Returns place location marked as unverified with calculated confidence."""
         confidence = ConfidenceService.calculate_confidence(
@@ -137,7 +123,7 @@ class GooglePlacesService:
             verified=False,
             place_id=None,
             address=None,
-            text_context=text_context
+            text_context=text_context,
         )
 
         return PlaceLocation(
@@ -149,15 +135,11 @@ class GooglePlacesService:
             latitude=None,
             longitude=None,
             place_id=None,
-            verified=False
+            verified=False,
         )
 
     def _mock_verify_place(
-        self,
-        name: str,
-        city: Optional[str],
-        country: Optional[str],
-        text_context: Optional[str] = None
+        self, name: str, city: Optional[str], country: Optional[str], text_context: Optional[str] = None
     ) -> PlaceLocation:
         """Returns mock enriched place for testing/local development."""
         mock_places_db = {
@@ -169,10 +151,10 @@ class GooglePlacesService:
                 "latitude": 34.9671,
                 "longitude": 135.7727,
                 "place_id": "ChIJ31-1ZkQGAWARf0N5e9rW028",
-                "verified": True
+                "verified": True,
             }
         }
-        
+
         lower_name = name.lower()
         if lower_name in mock_places_db:
             data = mock_places_db[lower_name]
@@ -183,7 +165,7 @@ class GooglePlacesService:
                 verified=True,
                 place_id=data["place_id"],
                 address=data["address"],
-                text_context=text_context
+                text_context=text_context,
             )
             return PlaceLocation(confidence=confidence, **data)
 
@@ -196,7 +178,7 @@ class GooglePlacesService:
             verified=True,
             place_id=f"mock_place_{hash(name) % 1000000}",
             address=f"{name}, {final_city}, {final_country}",
-            text_context=text_context
+            text_context=text_context,
         )
 
         return PlaceLocation(
@@ -208,5 +190,5 @@ class GooglePlacesService:
             latitude=34.9671,
             longitude=135.7727,
             place_id=f"mock_place_{hash(name) % 1000000}",
-            verified=True
+            verified=True,
         )

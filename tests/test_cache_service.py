@@ -11,12 +11,12 @@ async def test_cache_hit_cycle(client):
     payload = {"text": "Visiting Tokyo Tower in Japan.", "context": "Test"}
 
     # First call -> fresh extraction (Cache MISS)
-    res1 = await client.post("/extract/text", json=payload, headers=headers)
+    res1 = await client.post(f"{settings.API_V1_STR}/extract/text", json=payload, headers=headers)
     assert res1.status_code == 200
     data1 = res1.json()
 
     # Second call with identical payload -> Cache HIT
-    res2 = await client.post("/extract/text", json=payload, headers=headers)
+    res2 = await client.post(f"{settings.API_V1_STR}/extract/text", json=payload, headers=headers)
     assert res2.status_code == 200
     data2 = res2.json()
 
@@ -31,12 +31,12 @@ async def test_cache_stats_and_clear_endpoints(client):
     settings = get_settings()
     headers = {"X-API-Key": settings.API_KEY}
     # Stats
-    res_stats = await client.get("/cache", headers=headers)
+    res_stats = await client.get(f"{settings.API_V1_STR}/cache", headers=headers)
     assert res_stats.status_code == 200
     assert "total_entries" in res_stats.json()
 
     # Clear
-    res_clear = await client.delete("/cache", headers=headers)
+    res_clear = await client.delete(f"{settings.API_V1_STR}/cache", headers=headers)
     assert res_clear.status_code == 200
     assert res_clear.json()["status"] == "ok"
 
@@ -46,6 +46,6 @@ async def test_cache_prune_endpoint(client):
     """Test DELETE /cache/prune endpoint."""
     settings = get_settings()
     headers = {"X-API-Key": settings.API_KEY}
-    res = await client.delete("/cache/prune?days=30", headers=headers)
+    res = await client.delete(f"{settings.API_V1_STR}/cache/prune?days=30", headers=headers)
     assert res.status_code == 200
     assert res.json()["status"] == "ok"

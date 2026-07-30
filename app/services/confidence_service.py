@@ -4,10 +4,32 @@ from typing import Optional
 from app.core.logging import logger
 
 GENERIC_LOCATION_TERMS = {
-    "temple", "beach", "cafe", "restaurant", "hotel", "resort", "park",
-    "waterfall", "bar", "club", "shop", "market", "museum", "church",
-    "street", "island", "lake", "mountain", "bridge", "tower", "castle",
-    "viewpoint", "monument", "statue", "palace", "stadium"
+    "temple",
+    "beach",
+    "cafe",
+    "restaurant",
+    "hotel",
+    "resort",
+    "park",
+    "waterfall",
+    "bar",
+    "club",
+    "shop",
+    "market",
+    "museum",
+    "church",
+    "street",
+    "island",
+    "lake",
+    "mountain",
+    "bridge",
+    "tower",
+    "castle",
+    "viewpoint",
+    "monument",
+    "statue",
+    "palace",
+    "stadium",
 }
 
 
@@ -22,7 +44,7 @@ class ConfidenceService:
         verified: bool = False,
         place_id: Optional[str] = None,
         address: Optional[str] = None,
-        text_context: Optional[str] = None
+        text_context: Optional[str] = None,
     ) -> int:
         """
         Calculates a 0-100% confidence score based on multi-signal evidence:
@@ -49,6 +71,8 @@ class ConfidenceService:
         if city:
             score += 10
         if country:
+            score += 10
+        if city and country:
             score += 10
 
         # 3. Context & Caption Alignment Signal (Max 20 pts)

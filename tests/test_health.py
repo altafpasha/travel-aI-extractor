@@ -1,5 +1,7 @@
 import pytest
 
+from app.core.config import get_settings
+
 
 @pytest.mark.asyncio
 async def test_root_endpoint(client):
@@ -12,7 +14,8 @@ async def test_root_endpoint(client):
 @pytest.mark.asyncio
 async def test_health_check_endpoint(client):
     """Tests GET /health returns expected JSON metadata."""
-    response = await client.get("/health")
+    settings = get_settings()
+    response = await client.get(f"{settings.API_V1_STR}/health")
     assert response.status_code == 200
     data = response.json()
     assert data["status"] == "ok"

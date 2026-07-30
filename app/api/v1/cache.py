@@ -9,13 +9,9 @@ router = APIRouter(prefix="/cache", tags=["Cache Management"], dependencies=[Dep
 
 
 @router.get(
-    "",
-    status_code=status.HTTP_200_OK,
-    summary="Retrieve overall smart extraction cache performance statistics"
+    "", status_code=status.HTTP_200_OK, summary="Retrieve overall smart extraction cache performance statistics"
 )
-async def get_cache_statistics(
-    db: AsyncSession = Depends(get_db)
-):
+async def get_cache_statistics(db: AsyncSession = Depends(get_db)):
     """
     Returns total cached extraction entries, cumulative cache hit counts, and performance metrics.
     """
@@ -23,14 +19,8 @@ async def get_cache_statistics(
     return await cache_service.get_stats()
 
 
-@router.delete(
-    "",
-    status_code=status.HTTP_200_OK,
-    summary="Purge all smart cache entries from database"
-)
-async def clear_cache_entries(
-    db: AsyncSession = Depends(get_db)
-):
+@router.delete("", status_code=status.HTTP_200_OK, summary="Purge all smart cache entries from database")
+async def clear_cache_entries(db: AsyncSession = Depends(get_db)):
     """
     Clears all stored smart cache entries.
     """
@@ -38,14 +28,9 @@ async def clear_cache_entries(
     return await cache_service.clear_cache()
 
 
-@router.delete(
-    "/prune",
-    status_code=status.HTTP_200_OK,
-    summary="Purge historical extraction logs older than N days"
-)
+@router.delete("/prune", status_code=status.HTTP_200_OK, summary="Purge historical extraction logs older than N days")
 async def prune_historical_logs(
-    days: int = Query(30, ge=1, le=365, description="Retention threshold in days"),
-    db: AsyncSession = Depends(get_db)
+    days: int = Query(30, ge=1, le=365, description="Retention threshold in days"), db: AsyncSession = Depends(get_db)
 ):
     """
     Deletes historical extraction logs older than the specified retention window (default 30 days).

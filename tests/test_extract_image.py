@@ -19,7 +19,7 @@ async def test_extract_image_success(client):
 
     files = {"file": ("test_landmark.jpg", img_bytes, "image/jpeg")}
 
-    res = await client.post("/extract/image", files=files, headers=headers)
+    res = await client.post(f"{settings.API_V1_STR}/extract/image", files=files, headers=headers)
     assert res.status_code == 200
     data = res.json()
     assert "destination" in data
@@ -34,7 +34,7 @@ async def test_extract_image_invalid_extension(client):
     headers = {"X-API-Key": settings.API_KEY}
     files = {"file": ("unsupported_doc.txt", b"text content", "text/plain")}
 
-    res = await client.post("/extract/image", files=files, headers=headers)
+    res = await client.post(f"{settings.API_V1_STR}/extract/image", files=files, headers=headers)
     assert res.status_code == 400
     assert "Unsupported image extension" in res.json()["detail"]
 
@@ -46,6 +46,6 @@ async def test_extract_image_empty_file(client):
     headers = {"X-API-Key": settings.API_KEY}
     files = {"file": ("empty_photo.jpg", b"", "image/jpeg")}
 
-    res = await client.post("/extract/image", files=files, headers=headers)
+    res = await client.post(f"{settings.API_V1_STR}/extract/image", files=files, headers=headers)
     assert res.status_code == 400
     assert "Uploaded file is empty" in res.json()["detail"]

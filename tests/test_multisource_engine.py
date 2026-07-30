@@ -9,9 +9,7 @@ from app.services.multisource_service import MultiSourceEngine
 async def test_multisource_build_travel_content_text():
     """Test MultiSourceEngine building TravelContent from raw text."""
     req = UniversalExtractionRequest(
-        source_type="text",
-        content="Exploring Shibuya Crossing in Tokyo",
-        context="Japan Trip"
+        source_type="text", content="Exploring Shibuya Crossing in Tokyo", context="Japan Trip"
     )
     content = await MultiSourceEngine.build_travel_content(req)
     assert content.source_type == "text"
@@ -27,10 +25,10 @@ async def test_extract_universal_endpoint(client):
     payload = {
         "source_type": "text",
         "content": "Visiting Fushimi Inari Shrine in Kyoto Japan.",
-        "context": "Kyoto Trip"
+        "context": "Kyoto Trip",
     }
 
-    res = await client.post("/extract/universal", json=payload, headers=headers)
+    res = await client.post(f"{settings.API_V1_STR}/extract/universal", json=payload, headers=headers)
     assert res.status_code == 200
     data = res.json()
     assert data["destination"] == "Kyoto"
@@ -42,13 +40,9 @@ async def test_extract_universal_endpoint_url(client):
     """Test POST /extract/universal endpoint with image URL."""
     settings = get_settings()
     headers = {"X-API-Key": settings.API_KEY}
-    payload = {
-        "source_type": "image_url",
-        "content": "https://example.com/kyoto_photo.jpg",
-        "context": "Shared Reel"
-    }
+    payload = {"source_type": "image_url", "content": "https://example.com/kyoto_photo.jpg", "context": "Shared Reel"}
 
-    res = await client.post("/extract/universal", json=payload, headers=headers)
+    res = await client.post(f"{settings.API_V1_STR}/extract/universal", json=payload, headers=headers)
     assert res.status_code == 200
     data = res.json()
     assert "destination" in data

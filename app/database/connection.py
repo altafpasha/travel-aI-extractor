@@ -9,6 +9,7 @@ from app.core.logging import logger
 
 class Base(DeclarativeBase):
     """Base declarative class for SQLAlchemy models."""
+
     pass
 
 
@@ -19,20 +20,18 @@ db_url = settings.async_database_url
 # Configure engine parameters based on database dialect
 engine_kwargs = {"echo": False, "future": True}
 if db_url.startswith("postgresql"):
-    engine_kwargs.update({
-        "pool_size": 10,
-        "max_overflow": 20,
-        "pool_pre_ping": True,
-    })
+    engine_kwargs.update(
+        {
+            "pool_size": 10,
+            "max_overflow": 20,
+            "pool_pre_ping": True,
+        }
+    )
 
 engine = create_async_engine(db_url, **engine_kwargs)
 
 AsyncSessionLocal = async_sessionmaker(
-    bind=engine,
-    class_=AsyncSession,
-    expire_on_commit=False,
-    autocommit=False,
-    autoflush=False
+    bind=engine, class_=AsyncSession, expire_on_commit=False, autocommit=False, autoflush=False
 )
 
 

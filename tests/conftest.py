@@ -27,6 +27,7 @@ async def db_session():
 @pytest_asyncio.fixture(scope="function")
 async def client(db_session):
     """Provides an AsyncClient for FastAPI endpoint testing with DB dependency override."""
+
     async def _override_get_db():
         yield db_session
 

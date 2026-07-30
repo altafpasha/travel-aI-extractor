@@ -1,5 +1,3 @@
-from typing import Any, Dict, Optional
-
 import httpx
 
 from app.core.exceptions import TravelExtractorException
@@ -22,7 +20,7 @@ class MultiSourceEngine:
             return TravelContent(
                 source_type="text",
                 caption=content,
-                metadata={"context_hint": request.context, "context": request.context}
+                metadata={"context_hint": request.context, "context": request.context},
             )
 
         elif source_type in ("image_url", "video_url"):
@@ -32,8 +30,7 @@ class MultiSourceEngine:
                     resp = await client.get(content)
                     if resp.status_code != 200:
                         raise TravelExtractorException(
-                            f"Failed to fetch media URL (HTTP {resp.status_code})",
-                            status_code=400
+                            f"Failed to fetch media URL (HTTP {resp.status_code})", status_code=400
                         )
 
                     media_bytes = resp.content
@@ -42,7 +39,7 @@ class MultiSourceEngine:
                             source_type="image",
                             frames=[media_bytes],
                             caption=request.context,
-                            metadata={"url": content}
+                            metadata={"url": content},
                         )
                     else:
                         # video URL
@@ -50,21 +47,15 @@ class MultiSourceEngine:
                             source_type="video",
                             frames=[media_bytes],  # Handled downstream by video processor
                             caption=request.context,
-                            metadata={"url": content}
+                            metadata={"url": content},
                         )
             except Exception as e:
                 logger.error(f"Error fetching media URL '{content}': {str(e)}")
                 # Fallback as text if download fails
                 return TravelContent(
-                    source_type="text",
-                    caption=f"{content} {request.context or ''}".strip(),
-                    metadata={"error": str(e)}
+                    source_type="text", caption=f"{content} {request.context or ''}".strip(), metadata={"error": str(e)}
                 )
 
         else:
             # Fallback raw
-            return TravelContent(
-                source_type="text",
-                caption=content,
-                metadata={"context_hint": request.context}
-            )
+            return TravelContent(source_type="text", caption=content, metadata={"context_hint": request.context})

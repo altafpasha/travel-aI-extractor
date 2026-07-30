@@ -23,7 +23,7 @@ async def verify_api_key(api_key: str = Security(api_key_header)) -> str:
         logger.warning(f"Unauthorized API request with invalid/missing X-API-Key: '{api_key}'")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid or missing API key. Provide a valid 'X-API-Key' header."
+            detail="Invalid or missing API key. Provide a valid 'X-API-Key' header.",
         )
 
     return api_key

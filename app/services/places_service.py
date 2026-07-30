@@ -30,7 +30,13 @@ class GooglePlacesService:
         if not name:
             return PlaceLocation(name="Unknown Place", confidence=0, verified=False)
 
-        if not self.api_key or self.api_key == "your-google-places-api-key-here" or self.api_key == "mock-places-key":
+        if (
+            not self.api_key
+            or "your_" in self.api_key.lower()
+            or "your-" in self.api_key.lower()
+            or "mock" in self.api_key.lower()
+            or "replace_" in self.api_key.lower()
+        ):
             logger.info(f"Google Places API key is mock/unconfigured. Returning mock verified result for '{name}'.")
             return self._mock_verify_place(name, city, country, text_context=text_context)
 

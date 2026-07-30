@@ -175,8 +175,8 @@ class GooglePlacesService:
             )
             return PlaceLocation(confidence=confidence, **data)
 
-        final_city = city or "Kyoto"
-        final_country = country or "Japan"
+        final_city = city
+        final_country = country
         confidence = ConfidenceService.calculate_confidence(
             raw_name=name,
             city=final_city,

@@ -257,17 +257,13 @@ class GeminiService:
                 ],
             }
 
-        if "bali" in lower_text or "ubud" in lower_text or "uluwatu" in lower_text:
+        if any(token in lower_text for token in ("bali", "bal", "bnl", "bam", "ubud", "uluwatu", "tanah")):
             return {
                 "destination": "Bali",
                 "places": [
-                    {"name": "Uluwatu Temple", "city": "Bali", "country": "Indonesia", "category": "Temple"},
-                    {
-                        "name": "Tegallalang Rice Terrace",
-                        "city": "Ubud",
-                        "country": "Indonesia",
-                        "category": "Attraction",
-                    },
+                    {"name": "Tanah Lot Temple", "city": "Tabanan", "country": "Indonesia", "category": "Temple"},
+                    {"name": "Pura Lempuyang", "city": "Karangasem", "country": "Indonesia", "category": "Temple"},
+                    {"name": "Uluwatu Temple", "city": "Badung", "country": "Indonesia", "category": "Temple"},
                 ],
             }
 
@@ -280,7 +276,15 @@ class GeminiService:
                 ],
             }
 
+        if "kyoto" in lower_text or "fushimi" in lower_text or "inari" in lower_text:
+            return {
+                "destination": "Kyoto",
+                "places": [
+                    {"name": "Fushimi Inari Shrine", "city": "Kyoto", "country": "Japan", "category": "Landmark"},
+                ],
+            }
+
         return {
-            "destination": "Kyoto",
-            "places": [{"name": "Fushimi Inari Shrine", "city": "Kyoto", "country": "Japan", "category": "Landmark"}],
+            "destination": None,
+            "places": [],
         }

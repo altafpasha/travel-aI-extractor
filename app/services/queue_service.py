@@ -1,17 +1,17 @@
 import asyncio
 import json
-from typing import Any, Dict, Optional
+from typing import Optional
 import uuid
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.database.repository import ExtractionJob, ExtractionRepository
+from app.core.logging import logger
+from app.database.repository import ExtractionRepository
 from app.schemas.extraction import ImageExtractionResponse
 from app.schemas.multisource import UniversalExtractionRequest
 from app.schemas.queue import AsyncExtractionResponse, JobStatusResponse
-from app.services.multisource_service import MultiSourceEngine
 from app.services.extraction_service import ExtractionService
-from app.core.logging import logger
+from app.services.multisource_service import MultiSourceEngine
 
 
 class QueueService:

@@ -70,12 +70,12 @@ jobs:
             
             # Health Verification
             echo "Executing post-deployment health check..."
-            HEALTH_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:${PORT:-8000}/health || echo "500")
-            
+            HEALTH_STATUS=$(curl -s -L -o /dev/null -w "%{http_code}" "http://127.0.0.1:${PORT:-8085}/health" || echo "500")
+
             if [ "$HEALTH_STATUS" -eq 200 ]; then
               echo "✅ Health check PASSED (HTTP $HEALTH_STATUS). Deployment successful!"
             else
-              echo "❌ Health check FAILED (HTTP $HEALTH_STATUS). Triggering automated rollback..."
-              docker compose -f docker/docker-compose.yml rollback || docker compose -f docker/docker-compose.yml restart
+              echo "❌ Health check FAILED (HTTP $HEALTH_STATUS). Restarting container stack..."
+              docker compose -f docker/docker-compose.yml restart
               exit 1
             fi

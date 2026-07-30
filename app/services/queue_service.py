@@ -73,7 +73,7 @@ class QueueService:
         try:
             await self.repo.update_job_status(job_id, status="processing")
             content = await MultiSourceEngine.build_travel_content(request)
-            
+
             extraction_service = ExtractionService(db_session=self.db_session)
             result = await extraction_service.process_travel_content(content)
 

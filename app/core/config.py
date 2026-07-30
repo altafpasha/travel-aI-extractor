@@ -1,12 +1,10 @@
 from functools import lru_cache
-from typing import Optional
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
     """Application Settings managed via environment variables and .env file."""
-    
     PROJECT_NAME: str = "Travel AI Extractor"
     API_V1_STR: str = ""
     ENVIRONMENT: str = "development"

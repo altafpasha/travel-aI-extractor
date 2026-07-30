@@ -19,7 +19,7 @@ def setup_logging() -> logging.Logger:
 
     logger = logging.getLogger("travel_ai_extractor")
     logger.setLevel(log_level)
-    
+
     # Avoid duplicated log handlers if re-initialized
     if not logger.handlers:
         logger.addHandler(handler)

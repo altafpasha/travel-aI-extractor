@@ -7,7 +7,6 @@ from fastapi import UploadFile
 
 from app.core.config import get_settings
 from app.core.exceptions import ImageProcessingError
-from app.core.logging import logger
 
 ALLOWED_IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp", ".heic"}
 ALLOWED_IMAGE_MIME_TYPES = {"image/jpeg", "image/png", "image/webp", "image/heic"}
@@ -26,7 +25,7 @@ class FileHandler:
         Validates image file type and size, returning file_bytes, filename, and sha256_hash.
         """
         settings = get_settings()
-        
+
         if not file.filename:
             raise ImageProcessingError("File must have a valid filename.")
 

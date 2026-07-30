@@ -55,7 +55,7 @@ class ExtractionJob(Base):
 
 class ExtractionRepository:
     """Repository managing extraction history database operations."""
-    
+
     def __init__(self, session: AsyncSession):
         self.session = session
 

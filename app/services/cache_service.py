@@ -1,8 +1,10 @@
 import json
-from typing import Optional, Dict, Any
+from typing import Any, Dict, Optional
+
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.database.repository import CacheRepository, ExtractionRepository
+
 from app.core.logging import logger
+from app.database.repository import CacheRepository, ExtractionRepository
 
 
 class CacheService:

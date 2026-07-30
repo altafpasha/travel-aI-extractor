@@ -1,5 +1,7 @@
+from typing import Any, Dict, Optional
+
 import httpx
-from typing import Dict, Any, Optional
+
 from app.core.config import get_settings
 from app.core.exceptions import PlacesServiceException
 from app.core.logging import logger

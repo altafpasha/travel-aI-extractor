@@ -1,11 +1,13 @@
 from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.core.config import get_settings
-from app.core.logging import logger
-from app.core.exceptions import TravelExtractorException, travel_extractor_exception_handler
-from app.database.connection import init_db
+
 from app.api.v1.router import api_v1_router
+from app.core.config import get_settings
+from app.core.exceptions import TravelExtractorException, travel_extractor_exception_handler
+from app.core.logging import logger
+from app.database.connection import init_db
 
 settings = get_settings()
 

@@ -1,8 +1,10 @@
 import hashlib
 import os
+from typing import Tuple
+
 import anyio
 from fastapi import UploadFile
-from typing import Tuple
+
 from app.core.config import get_settings
 from app.core.exceptions import ImageProcessingError
 from app.core.logging import logger

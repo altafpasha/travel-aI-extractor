@@ -9,7 +9,7 @@ async def test_cache_hit_cycle(client):
     settings = get_settings()
     headers = {"X-API-Key": settings.API_KEY}
     payload = {"text": "Visiting Tokyo Tower in Japan.", "context": "Test"}
-    
+
     # First call -> fresh extraction (Cache MISS)
     res1 = await client.post("/extract/text", json=payload, headers=headers)
     assert res1.status_code == 200

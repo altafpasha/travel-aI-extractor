@@ -1,11 +1,13 @@
+from datetime import datetime, timedelta, timezone
 import json
-from datetime import datetime, timezone, timedelta
-from typing import Optional, Dict, Any, List
-from sqlalchemy import String, Integer, Float, Text, DateTime, select, delete, func
-from sqlalchemy.orm import Mapped, mapped_column
+from typing import Any, Dict, List, Optional
+
+from sqlalchemy import DateTime, Float, Integer, String, Text, delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.database.connection import Base
+from sqlalchemy.orm import Mapped, mapped_column
+
 from app.core.logging import logger
+from app.database.connection import Base
 
 
 class ExtractionLog(Base):

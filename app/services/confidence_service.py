@@ -1,5 +1,6 @@
 import re
 from typing import Optional
+
 from app.core.logging import logger
 
 GENERIC_LOCATION_TERMS = {

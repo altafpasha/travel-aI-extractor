@@ -1,10 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.database.connection import get_db
+
 from app.core.security import verify_api_key
-from app.services.queue_service import QueueService
+from app.database.connection import get_db
 from app.schemas.multisource import UniversalExtractionRequest
 from app.schemas.queue import JobEnqueueResponse, JobStatusResponse
+from app.services.queue_service import QueueService
 
 router = APIRouter(tags=["Async Queue"], dependencies=[Depends(verify_api_key)])
 

@@ -1,12 +1,13 @@
-from fastapi import APIRouter, UploadFile, File, Depends, status
+from fastapi import APIRouter, Depends, File, UploadFile, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.database.connection import get_db
+
 from app.core.security import verify_api_key
-from app.utils.file_handler import FileHandler
+from app.database.connection import get_db
+from app.schemas.extraction import ExtractionErrorResponse, ImageExtractionResponse, TextExtractionRequest
+from app.schemas.multisource import UniversalExtractionRequest
 from app.services.extraction_service import ExtractionService
 from app.services.multisource_service import MultiSourceEngine
-from app.schemas.extraction import ImageExtractionResponse, TextExtractionRequest, ExtractionErrorResponse
-from app.schemas.multisource import UniversalExtractionRequest
+from app.utils.file_handler import FileHandler
 
 router = APIRouter(prefix="/extract", tags=["Extraction"], dependencies=[Depends(verify_api_key)])
 

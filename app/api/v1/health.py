@@ -1,5 +1,6 @@
 from fastapi import APIRouter
 from fastapi.responses import PlainTextResponse
+
 from app.core.config import get_settings
 from app.schemas.health import HealthResponse
 

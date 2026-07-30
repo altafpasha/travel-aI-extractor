@@ -1,18 +1,20 @@
 import asyncio
 import hashlib
 import time
-from typing import Optional, List
+from typing import List, Optional
+
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.core.logging import logger
-from app.services.gemini_service import GeminiService
-from app.services.places_service import GooglePlacesService
-from app.services.video_service import FFmpegService
-from app.services.cache_service import CacheService
-from app.services.ocr_service import OCRService
-from app.services.speech_service import AudioSpeechService
+from app.database.repository import ExtractionRepository
 from app.schemas.extraction import ImageExtractionResponse, PlaceLocation
 from app.schemas.multisource import TravelContent
-from app.database.repository import ExtractionRepository
+from app.services.cache_service import CacheService
+from app.services.gemini_service import GeminiService
+from app.services.ocr_service import OCRService
+from app.services.places_service import GooglePlacesService
+from app.services.speech_service import AudioSpeechService
+from app.services.video_service import FFmpegService
 
 
 class ExtractionService:

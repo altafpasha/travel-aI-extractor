@@ -1,5 +1,7 @@
+from typing import Any, Dict, Optional
+
 from pydantic import BaseModel, Field
-from typing import Optional, Dict, Any
+
 from app.schemas.extraction import ImageExtractionResponse
 
 

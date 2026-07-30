@@ -1,8 +1,10 @@
+from typing import Any, Dict, Optional
+
 import httpx
-from typing import Optional, Dict, Any
-from app.schemas.multisource import TravelContent, UniversalExtractionRequest
+
 from app.core.exceptions import TravelExtractorException
 from app.core.logging import logger
+from app.schemas.multisource import TravelContent, UniversalExtractionRequest
 
 
 class MultiSourceEngine:

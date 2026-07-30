@@ -1,8 +1,10 @@
 import asyncio
 import json
 import re
+from typing import Any, Dict, List, Optional
+
 import httpx
-from typing import Dict, Any, List, Optional
+
 from app.core.config import get_settings
 from app.core.exceptions import AIServiceException
 from app.core.logging import logger

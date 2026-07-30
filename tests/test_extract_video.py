@@ -29,7 +29,7 @@ async def test_extract_video_invalid_extension(client):
 
     res = await client.post("/extract/video", files=files, headers=headers)
     assert res.status_code == 400
-    assert "Unsupported video file format" in res.json()["detail"]
+    assert "Unsupported video extension" in res.json()["detail"]
 
 
 @pytest.mark.asyncio

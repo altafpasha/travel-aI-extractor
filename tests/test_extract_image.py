@@ -36,7 +36,7 @@ async def test_extract_image_invalid_extension(client):
 
     res = await client.post("/extract/image", files=files, headers=headers)
     assert res.status_code == 400
-    assert "Unsupported image file format" in res.json()["detail"]
+    assert "Unsupported image extension" in res.json()["detail"]
 
 
 @pytest.mark.asyncio
@@ -48,4 +48,4 @@ async def test_extract_image_empty_file(client):
 
     res = await client.post("/extract/image", files=files, headers=headers)
     assert res.status_code == 400
-    assert "Uploaded image file is empty" in res.json()["detail"]
+    assert "Uploaded file is empty" in res.json()["detail"]
